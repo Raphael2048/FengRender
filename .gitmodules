@@ -1,0 +1,12 @@
+[submodule "deps/DirectXTex"]
+	path = deps/DirectXTex
+	url = https://github.com/TeamWisp/DirectXTex.git
+[submodule "deps/DirectXTK12"]
+	path = deps/DirectXTK12
+	url = https://github.com/microsoft/DirectXTK12.git
+[submodule "deps/D3D12MemoryAllocator"]
+	path = deps/D3D12MemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
+[submodule "deps/assimp"]
+	path = deps/assimp
+	url = https://github.com/assimp/assimp.git
