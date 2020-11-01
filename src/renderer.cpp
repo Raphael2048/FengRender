@@ -21,21 +21,10 @@ namespace feng
             static_mesh->Init(GetDevice(), command_list);
         }
         
-        std::array<Vertex, 8> vertices =
-        {
-            Vertex({Vector3(-1.0f, -1.0f, -1.0f), Vector2(0.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, +1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, +1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, -1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, -1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, +1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, +1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, -1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-        };
-
+        
         camera_buffer_ = std::make_unique<ConstantBuffer<CameraConstantBuffer>>(GetDevice(), 1, GetDevice().GetCBVHeap());
-        // simple_.reset(new Simple());
-        // simple_->Build(*this);
+        simple_.reset(new Simple());
+        simple_->Build(*this);
 
         device_->EndCommand();
         device_->FlushCommand(0);
@@ -45,12 +34,12 @@ namespace feng
     {
         auto &camera = *(scene.Camera);
         CameraConstantBuffer constant;
-        constant.View = camera.MatrixView;
-        constant.InvView = camera.MatrixInvView;
-        constant.Proj = camera.MatrixProj;
-        constant.InvProj = camera.MatrixInvProj;
+        constant.View = camera.MatrixView.Transpose();
+        constant.InvView = camera.MatrixInvView.Transpose();
+        constant.Proj = camera.MatrixProj.Transpose();
+        constant.InvProj = camera.MatrixInvProj.Transpose();
 
         camera_buffer_->Write(0, constant);
-        // simple_->Draw(*this, scene);
+        simple_->Draw(*this, scene);
     }
 } // namespace feng

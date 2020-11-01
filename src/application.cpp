@@ -18,12 +18,12 @@ namespace feng
     void Application::Init()
     {
         OnInit();
-        // renderer_->Init(*Root);
+        renderer_->Init(*Root);
 
         window_->SetRenderLoop([&](){
             float deltatime = Update();
             Root->Update(deltatime);
-            // renderer_->Draw(*Root);
+            renderer_->Draw(*Root);
         });
     }
 

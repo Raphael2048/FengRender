@@ -1,12 +1,11 @@
 #include "scene/camera.hpp"
-
+#include <DirectXMath.h>
 namespace feng
 {
 
-    Camera::Camera(const Vector3 &position, const Vector3 &rotation, float near, float far, float fov, float aspect)
-        :Node(position_, rotation_, Vector3::One), near_(near), far_(far), fov_(fov), aspect_(aspect) 
+    Camera::Camera(const Vector3 &position, const Vector3 &rotation, float near_distance, float far_distance, float fov, float aspect)
+        :Node(position, rotation, Vector3::One), near_(near_distance), far_(far_distance), fov_(fov), aspect_(aspect)
     {
-
     }
 
     void Camera::Update(float delta)
@@ -19,10 +18,13 @@ namespace feng
     }
     void Camera::RefreshMatrix()
     {
-        MatrixView = Matrix::CreateFromYawPitchRoll(rotation_.x, rotation_.y, rotation_.z);
-        MatrixInvView = MatrixView.Invert();
+        MatrixInvView = Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.x),
+            DirectX::XMConvertToRadians(rotation_.y), DirectX::XMConvertToRadians(rotation_.z));
+        MatrixInvView *= Matrix::CreateTranslation(position_);
+        MatrixView = MatrixInvView.Invert();
 
-        MatrixProj = Matrix::CreatePerspectiveFieldOfView(fov_, aspect_, near_, far_);
+        DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fov_), aspect_, near_, far_));
+        //MatrixProj = Matrix::CreatePerspectiveFieldOfView(, aspect_, near_, far_);
 
         MatrixInvProj = MatrixProj.Invert();
     }

@@ -17,21 +17,36 @@ namespace feng {
         Node(position, rotation, scale), vertex_count_(vertex_size), index_count_(index_size)
     {
 
-        TRY(D3DCreateBlob(sizeof(Vector3) * vertex_size, &vertex_buffer_cpu_));
-        CopyMemory(vertex_buffer_cpu_->GetBufferPointer(), vertex_data, sizeof(Vector3) * vertex_size);
+        TRY(D3DCreateBlob(sizeof(Vertex) * vertex_count_, &vertex_buffer_cpu_));
+        CopyMemory(vertex_buffer_cpu_->GetBufferPointer(), vertex_data, sizeof(Vertex) * vertex_count_);
 
-        TRY(D3DCreateBlob(sizeof(Vector3) * vertex_size, &index_buffer_cpu_));
-        CopyMemory(vertex_buffer_cpu_->GetBufferPointer(), vertex_data, sizeof(Vector3) * vertex_size);
-        // vertex_buffer_.reset(new Buffer(device, vertex_data, sizeof(Vector3) * vertex_count_, command));
+        TRY(D3DCreateBlob(sizeof(uint32_t) * index_count_, &index_buffer_cpu_));
+        CopyMemory(index_buffer_cpu_->GetBufferPointer(), index_data, sizeof(uint32_t) * index_count_);
 
-        // if (index_data != nullptr)
-        // {
-        //     index_buffer_.reset(new Buffer(device, index_data, sizeof(Vector2) * index_count_, command));
-        // }
     }
 
-    void StaticMesh::Init(const Device& device, ID3D12GraphicsCommandList* commnad)
+    void StaticMesh::Init(const Device& device, ID3D12GraphicsCommandList* command)
     {
+        vertex_buffer_.reset(new Buffer(device, vertex_buffer_cpu_->GetBufferPointer(), sizeof(Vertex) * vertex_count_, command));
 
+        index_buffer_.reset(new Buffer(device, index_buffer_cpu_->GetBufferPointer(), sizeof(uint32_t) * index_count_, command));
+    }
+
+    D3D12_VERTEX_BUFFER_VIEW StaticMesh::GetVertexBufferView()
+    {
+            D3D12_VERTEX_BUFFER_VIEW vbv;
+		vbv.BufferLocation = vertex_buffer_->GetGPUAddress();
+		vbv.StrideInBytes = sizeof(Vertex);
+		vbv.SizeInBytes = sizeof(Vertex) * vertex_count_;
+
+		return vbv;
+    }
+    D3D12_INDEX_BUFFER_VIEW StaticMesh::GetIndexBufferView()
+    {
+        D3D12_INDEX_BUFFER_VIEW ibv;
+		ibv.BufferLocation = index_buffer_->GetGPUAddress();
+		ibv.Format = DXGI_FORMAT_R32_UINT;
+		ibv.SizeInBytes = sizeof(uint32_t) * index_count_;
+		return ibv;
     }
 }

@@ -13,6 +13,7 @@ namespace feng
         ConstantBuffer(const Device &device, uint32_t count, ID3D12DescriptorHeap* cbv_heap)
         {
             size_ = sizeof(T);
+            // constant buffer大小必须是256的倍数
             size_ = ConstantBufferSize(size_);
 
             device.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),

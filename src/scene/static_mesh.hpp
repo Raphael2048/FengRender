@@ -17,6 +17,9 @@ namespace feng
             void* vertex_data, UINT vertex_size, void* index_data = nullptr, UINT index_size = 0);
 
         void Init(const Device& device, ID3D12GraphicsCommandList* commnad);
+
+        D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView();
+        D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();
         static D3D12_INPUT_LAYOUT_DESC InputLayout();
 
     public:
