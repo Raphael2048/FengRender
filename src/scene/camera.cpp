@@ -18,12 +18,12 @@ namespace feng
     }
     void Camera::RefreshMatrix()
     {
-        MatrixInvView = Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.x),
-            DirectX::XMConvertToRadians(rotation_.y), DirectX::XMConvertToRadians(rotation_.z));
-        MatrixInvView *= Matrix::CreateTranslation(position_);
-        MatrixView = MatrixInvView.Invert();
+        MatrixView = Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.y),
+            DirectX::XMConvertToRadians(rotation_.x), DirectX::XMConvertToRadians(-rotation_.z));
+        MatrixView *= Matrix::CreateTranslation(position_);
+        MatrixInvView = MatrixView.Invert();
 
-        DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fov_), aspect_, near_, far_));
+        DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(fov_), aspect_, near_, far_));
         //MatrixProj = Matrix::CreatePerspectiveFieldOfView(, aspect_, near_, far_);
 
         MatrixInvProj = MatrixProj.Invert();

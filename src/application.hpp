@@ -3,7 +3,7 @@
 #include "renderer.hpp"
 #include "window.hpp"
 #include "scene/scene.hpp"
-
+#include <iostream>
 namespace feng
 {
     class Application
@@ -17,6 +17,13 @@ namespace feng
         float Update();
 
     protected:
+        virtual void OnMouseMove(WPARAM btnState, int x, int y){
+            // std::cout << x << ',' << y << std::endl;
+        }
+        virtual void OnMouseWheel(short value){
+            // std::cout << value << std::endl;
+        };
+
         std::unique_ptr<Scene> Root;
 
     private:

@@ -25,6 +25,14 @@ namespace feng
             Root->Update(deltatime);
             renderer_->Draw(*Root);
         });
+
+        window_->SetMouseWheelCallback([&](short value){
+            OnMouseWheel(value);
+        });
+
+        window_->SetMouseMoveCallback([&](WPARAM state, int x, int y){
+            OnMouseMove(state, x, y);
+        });
     }
 
     void Application::OnInit()

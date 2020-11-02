@@ -46,7 +46,12 @@ namespace feng
         }
 
         virtual void Update(float deltatime) { }
+
+        Matrix MatrixView;
+        Matrix MatrixInvView;
     protected:
+
+
         Vector3 position_ = {0, 0, 0};
         Vector3 rotation_ = {0, 0, 0};
         // Roll, Pitch, Yaw

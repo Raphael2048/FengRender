@@ -10,8 +10,8 @@ namespace feng
         Camera(const Vector3& position, const Vector3& rotation, float near_distance, float far_distance, float fov, float aspect);
 
         virtual void Update(float delta) override;
-        Matrix MatrixView;
-        Matrix MatrixInvView;
+        // Matrix MatrixView;
+        // Matrix MatrixInvView;
         Matrix MatrixProj;
         Matrix MatrixInvProj;
     private:

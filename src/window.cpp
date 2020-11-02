@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "window.hpp"
+#include "windowsx.h"
 #include "util/defines.hpp"
 
 namespace feng
@@ -136,6 +137,11 @@ namespace feng
 		m_mouse_wheel_callback = std::move(callback);
 	}
 
+	void Window::SetMouseMoveCallback(MouseMoveCallback callback)
+	{
+		m_mouse_move_callback = std::move(callback);
+	}
+
 	void Window::SetResizeCallback(ResizeCallback callback)
 	{
 		m_resize_callback = std::move(callback);
@@ -215,6 +221,12 @@ namespace feng
 				m_mouse_callback((int)w_param, msg, (int)l_param);
 			}
 			return 0;
+		case WM_MOUSEMOVE:
+			if (m_mouse_move_callback)
+			{
+				m_mouse_move_callback(w_param, GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
+			}
+			return 0;
 		case WM_KEYDOWN:
 		case WM_KEYUP:
 			if (m_key_callback)
@@ -227,7 +239,7 @@ namespace feng
 		case WM_MOUSEWHEEL:
 			if (m_mouse_wheel_callback)
 			{
-				m_mouse_wheel_callback((int)w_param, msg, (int)l_param);
+				m_mouse_wheel_callback(GET_WHEEL_DELTA_WPARAM(w_param));
 			}
 
 			return 0;

@@ -34,8 +34,9 @@ namespace feng
     {
         auto &camera = *(scene.Camera);
         CameraConstantBuffer constant;
-        constant.View = camera.MatrixView.Transpose();
-        constant.InvView = camera.MatrixInvView.Transpose();
+        // 交换的逆矩阵
+        constant.InvView = camera.MatrixView.Transpose();
+        constant.View = camera.MatrixInvView.Transpose();
         constant.Proj = camera.MatrixProj.Transpose();
         constant.InvProj = camera.MatrixInvProj.Transpose();
 
