@@ -23,6 +23,10 @@ namespace feng
 
         void FlushCommand(uint8_t idx);
 
+        void Wait(uint8_t idx);
+
+        void Signal(uint8_t idx);
+
     private:
         // ID3D12Debug* debug;
         //IDXGIAdapter4 *_adapter;

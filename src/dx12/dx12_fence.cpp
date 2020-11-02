@@ -25,16 +25,15 @@ namespace feng
     }
     void Fence::Wait()
     {
-        int64_t v = fence_->GetCompletedValue();
         if (fence_->GetCompletedValue() < value_)
         {
             TRY(fence_->SetEventOnCompletion(value_, event_));
             WaitForSingleObject(event_, INFINITE);
         }
-        value_ ++;
     }
     void Fence::Signal(ID3D12CommandQueue* queue)
     {
+        ++ value_;
         queue->Signal(fence_, value_);
     }
 } // namespace feng

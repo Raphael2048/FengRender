@@ -10,7 +10,7 @@ class Demo : public Application
     void OnInit() override
     {
         Camera* camera = new Camera(
-            Vector3{0, 0, 20}, Vector3{0, 0, 10}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
+            Vector3{0, 0, 20}, Vector3{0, 0, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
         );
         Root->SetCamera(camera);
 

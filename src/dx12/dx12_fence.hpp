@@ -14,6 +14,6 @@ namespace feng
     private:
         ID3D12Fence1* fence_;
         HANDLE event_ = nullptr;
-        UINT64 value_ = 1u;
+        UINT64 value_ = 0u;
     };
 } // namespace feng

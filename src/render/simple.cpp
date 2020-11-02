@@ -85,7 +85,8 @@ namespace feng
                                                                                D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
         renderer.GetDevice().EndCommand();
         render_window.Swap();
-        renderer.GetDevice().FlushCommand(0);
-        // command_list->RSSetViewports(1, )
+        // IDX + 1
+        renderer.GetDevice().Signal(renderer.GetRenderWindow().CurrentFrameIdx());
+        // renderer.GetDevice().FlushCommand(0);
     }
 } // namespace feng

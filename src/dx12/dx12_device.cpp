@@ -100,4 +100,14 @@ namespace feng
         fences_[idx]->Signal(direct_queue_);
         fences_[idx]->Wait();
     }
+
+    void Device::Signal(uint8_t idx)
+    {
+        fences_[idx]->Signal(direct_queue_);
+    }
+
+    void Device::Wait(uint8_t idx)
+    {
+        fences_[idx]->Wait();
+    }
 } // namespace feng

@@ -33,6 +33,8 @@ namespace feng
 
     void Renderer::Draw(const Scene& scene)
     {
+        uint8_t idx = render_window_->CurrentFrameIdx();
+        GetDevice().Wait(idx);
         auto &camera = *(scene.Camera);
         PassConstantBuffer constant;
         // 交换的逆矩阵
@@ -43,7 +45,7 @@ namespace feng
         constant.ViewProj = constant.Proj * constant.View;
         constant.InvViewProj = constant.InvView * constant.InvProj;
 
-        pass_constant_buffer_->operator[] (render_window_->CurrentFrameIdx()).Write(0, constant);
+        pass_constant_buffer_->operator[] (idx).Write(0, constant);
 
         for(auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
@@ -51,7 +53,7 @@ namespace feng
             ObjectConstantBuffer buffer;
             buffer.World = it->get()->MatrixWorld.Transpose();
             buffer.InvWorld = it->get()->MatrixInvWorld.Transpose();
-            object_constant_buffer_->operator[] (render_window_->CurrentFrameIdx()).Write(dis, buffer);
+            object_constant_buffer_->operator[] (idx).Write(dis, buffer);
         }
         simple_->Draw(*this, scene);
     }
