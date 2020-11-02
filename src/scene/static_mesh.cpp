@@ -49,4 +49,19 @@ namespace feng {
 		ibv.SizeInBytes = sizeof(uint32_t) * index_count_;
 		return ibv;
     }
+
+    void StaticMesh::Update([[maybe_unused]]float deltatime)
+    {
+        if (dirty_)
+        {
+            dirty_ = false;
+            MatrixWorld = Matrix::CreateScale(scale_);
+            MatrixWorld *= Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.y),
+                DirectX::XMConvertToRadians(rotation_.x), DirectX::XMConvertToRadians(rotation_.z));
+
+            MatrixWorld *= Matrix::CreateTranslation(position_);
+
+            MatrixInvWorld = MatrixWorld.Invert();
+        };
+    }
 }

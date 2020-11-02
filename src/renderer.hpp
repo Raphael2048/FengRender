@@ -8,12 +8,21 @@
 
 namespace feng
 {
-    struct CameraConstantBuffer
+    struct PassConstantBuffer
     {
         Matrix View;
         Matrix InvView;
         Matrix Proj;
         Matrix InvProj;
+        Matrix ViewProj;
+        Matrix InvViewProj;
+        Vector3 EyePos;
+    };
+
+    struct ObjectConstantBuffer
+    {
+        Matrix World;
+        Matrix InvWorld;
     };
     class Window;
     class Scene;
@@ -28,8 +37,9 @@ namespace feng
         void Init(const Scene& scene);
         void Draw(const Scene& scene);
 
+        std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> pass_constant_buffer_;
+        std::unique_ptr<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>> object_constant_buffer_;
     private:
-        std::unique_ptr<ConstantBuffer<CameraConstantBuffer>> camera_buffer_;
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;
         std::unique_ptr<Simple> simple_;

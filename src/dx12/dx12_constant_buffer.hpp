@@ -10,7 +10,11 @@ namespace feng
     class ConstantBuffer
     {
     public:
-        ConstantBuffer(const Device &device, uint32_t count, ID3D12DescriptorHeap* cbv_heap)
+        ConstantBuffer<T>(const ConstantBuffer<T>&) = delete;
+        ConstantBuffer<T>(ConstantBuffer<T>&&) noexcept = default;
+        ConstantBuffer<T>& operator = (const ConstantBuffer<T>&) = delete;
+        ConstantBuffer<T>& operator = (ConstantBuffer<T>&&) noexcept = default;
+        ConstantBuffer(const Device &device, uint32_t count)
         {
             size_ = sizeof(T);
             // constant buffer大小必须是256的倍数
@@ -25,16 +29,18 @@ namespace feng
             resource_->Map(0, nullptr, reinterpret_cast<void**>(&map_));
 
             
-            D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-            cbvDesc.BufferLocation = resource_->GetGPUVirtualAddress();
-            cbvDesc.SizeInBytes = size_;
-            device.GetDevice()->CreateConstantBufferView(&cbvDesc, cbv_heap->GetCPUDescriptorHandleForHeapStart());
+            // D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+            // cbvDesc.BufferLocation = resource_->GetGPUVirtualAddress();
+            // cbvDesc.SizeInBytes = static_cast<UINT>(size_);
+            // device.GetDevice()->CreateConstantBufferView(&cbvDesc, cbv_heap->GetCPUDescriptorHandleForHeapStart());
         }
 
         ID3D12Resource *GetResource() const
         {
             return resource_.Get();
         }
+
+        size_t GetSize() {return size_; }
 
         void Write(int idx, const T &data)
         {
@@ -45,7 +51,25 @@ namespace feng
         ComPtr<ID3D12Resource> resource_ = nullptr;
         size_t size_ = 0;
         BYTE *map_ = nullptr;
+    };
 
+    template<typename T, int SIZE>
+    class ConstantBufferGroup
+    {
+    public:
+        ConstantBufferGroup(const Device& device, uint32_t count)
+        {
+            for (int i = 0; i < SIZE; i++)
+            {
+               buffers_.push_back(ConstantBuffer<T>(device, count));
+            }
+        }
 
+        ConstantBuffer<T>& operator[](int idx)
+        {
+            return buffers_[idx];
+        }
+    private:
+        std::vector<ConstantBuffer<T>> buffers_;
     };
 } // namespace feng

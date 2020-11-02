@@ -6,11 +6,16 @@ namespace feng
     void Simple::Build(Renderer &renderer)
     {
         shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\simple.hlsl", nullptr);
-        CD3DX12_ROOT_PARAMETER slotRootParameter[1];
-        CD3DX12_DESCRIPTOR_RANGE cbvTable;
-        cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
-        slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
-        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+        CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+        // CD3DX12_DESCRIPTOR_RANGE cbvTable;
+        // cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+        // slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
+
+        slotRootParameter[0].InitAsConstantBufferView(0);
+        slotRootParameter[1].InitAsConstantBufferView(1);
+
+        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
         signature_ = std::make_unique<RootSignature>(renderer.GetDevice(), rootSigDesc);
 
@@ -39,22 +44,38 @@ namespace feng
 
     void Simple::Draw(Renderer &renderer, const Scene &scene)
     {
+        uint8_t idx = renderer.GetRenderWindow().CurrentFrameIdx();
         auto command_list = renderer.GetDevice().BeginCommand(0, pso_->GetPipelineState());
         RenderWindow &render_window = renderer.GetRenderWindow();
         render_window.SetupCommandList(command_list);
 
-        ID3D12DescriptorHeap *heaps[] = {renderer.GetDevice().GetCBVHeap()};
-        command_list->SetDescriptorHeaps(1, heaps);
+        //ID3D12DescriptorHeap *heaps[] = {renderer.GetDevice().GetCBVHeap()};
+        //command_list->SetDescriptorHeaps(1, heaps);
 
         command_list->SetGraphicsRootSignature(signature_->GetRootSignature());
 
-        for(auto& static_mesh:scene.StaticMeshes)
+        command_list->SetGraphicsRootConstantBufferView(1, renderer.pass_constant_buffer_->operator[] (idx).GetResource()->GetGPUVirtualAddress());
+
+        ConstantBuffer<ObjectConstantBuffer>& object_buffer = renderer.object_constant_buffer_->operator[](idx);
+        D3D12_GPU_VIRTUAL_ADDRESS object_buffer_base_address = object_buffer.GetResource()->GetGPUVirtualAddress();
+
+        for(auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
+            auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
+            StaticMesh* static_mesh = it->get();
+
+            //ObjectConstantBuffer buffer;
+            //buffer.World = static_mesh->MatrixWorld.Transpose();
+            //buffer.InvWorld = static_mesh->MatrixInvWorld.Transpose();
+            //renderer.object_constant_buffer_->operator[] (idx).Write(dis, buffer);
+
             command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
             command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
             command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetCBVHeap()->GetGPUDescriptorHandleForHeapStart());
+            
+            command_list->SetGraphicsRootConstantBufferView(0, object_buffer_base_address + dis * object_buffer.GetSize());
+            // command_list->SetGraphicsRootConstantBufferView(0, renderer.object_constant_buffer_->operator[] (idx).GetResource()->GetGPUVirtualAddress());
+            // command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetCBVHeap()->GetGPUDescriptorHandleForHeapStart());
 
             command_list->DrawIndexedInstanced(static_mesh->index_count_, 1, 0, 0, 0);
             // ID3D12DescriptorHeap* descriptorHeaps[] = { cbvHeap}

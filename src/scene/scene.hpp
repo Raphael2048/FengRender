@@ -11,7 +11,7 @@ namespace feng
         void AddStaticMesh(StaticMesh* mesh) { StaticMeshes.push_back(std::unique_ptr<StaticMesh>(mesh));  }
         void Update(float delta);
         std::unique_ptr<Camera> Camera;
-        std::list<std::unique_ptr<StaticMesh>> StaticMeshes;
+        std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;
     };
 
 } // namespace feng

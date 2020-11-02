@@ -10,7 +10,7 @@ class Demo : public Application
     void OnInit() override
     {
         Camera* camera = new Camera(
-            Vector3{0, 0, 20}, Vector3{0, 0, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
+            Vector3{0, 0, 20}, Vector3{0, 0, 10}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
         );
         Root->SetCamera(camera);
 
@@ -58,17 +58,27 @@ class Demo : public Application
             Vector3(0, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            vertices.data(), vertices.size(),
-            indices.data(), indices.size()
+            vertices.data(), static_cast<UINT>(vertices.size()),
+            indices.data(), static_cast<UINT>(indices.size())
         );
 
         Root->AddStaticMesh(mesh);
+        StaticMesh* mesh2 = new StaticMesh(
+            Vector3(10, 0, 0),
+            Vector3(0, 0, 0),
+            Vector3::One,
+            vertices.data(), static_cast<UINT>(vertices.size()),
+            indices.data(), static_cast<UINT>(indices.size())
+        );
+
+        Root->AddStaticMesh(mesh2);
+
     }
 
     virtual void OnMouseWheel(short value) override
     {
         auto& camera = Root->Camera;
-        camera->SetPosition(camera->GetPosition() + camera->MatrixView.Forward() * (value / 100.0f));
+        camera->SetPosition(camera->GetPosition() + camera->MatrixWorld.Forward() * (value / 100.0f));
     }
 
     virtual void OnMouseMove(WPARAM param, int x, int y) override

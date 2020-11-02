@@ -121,7 +121,7 @@ namespace feng
         command->RSSetViewports(1, &viewport_);
         command->RSSetScissorRects(1, &scissor_rect_);
         command->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-        command->ClearRenderTargetView(CurrentBackBufferView(), Color(1, 1, 0, 1), 0, nullptr);
+        command->ClearRenderTargetView(CurrentBackBufferView(), Color(0.1, 0.1, 0.1, 1), 0, nullptr);
         command->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
         // command->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
         command->OMSetRenderTargets(1, &CurrentBackBufferView(), FALSE, nullptr);

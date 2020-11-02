@@ -21,8 +21,9 @@ namespace feng
             static_mesh->Init(GetDevice(), command_list);
         }
         
-        
-        camera_buffer_ = std::make_unique<ConstantBuffer<CameraConstantBuffer>>(GetDevice(), 1, GetDevice().GetCBVHeap());
+     
+        pass_constant_buffer_ = std::make_unique<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), 1);
+        object_constant_buffer_ = std::make_unique<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), scene.StaticMeshes.size());
         simple_.reset(new Simple());
         simple_->Build(*this);
 
@@ -33,14 +34,25 @@ namespace feng
     void Renderer::Draw(const Scene& scene)
     {
         auto &camera = *(scene.Camera);
-        CameraConstantBuffer constant;
+        PassConstantBuffer constant;
         // 交换的逆矩阵
-        constant.InvView = camera.MatrixView.Transpose();
-        constant.View = camera.MatrixInvView.Transpose();
+        constant.InvView = camera.MatrixWorld.Transpose();
+        constant.View = camera.MatrixInvWorld.Transpose();
         constant.Proj = camera.MatrixProj.Transpose();
         constant.InvProj = camera.MatrixInvProj.Transpose();
+        constant.ViewProj = constant.Proj * constant.View;
+        constant.InvViewProj = constant.InvView * constant.InvProj;
 
-        camera_buffer_->Write(0, constant);
+        pass_constant_buffer_->operator[] (render_window_->CurrentFrameIdx()).Write(0, constant);
+
+        for(auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
+        {
+            auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
+            ObjectConstantBuffer buffer;
+            buffer.World = it->get()->MatrixWorld.Transpose();
+            buffer.InvWorld = it->get()->MatrixInvWorld.Transpose();
+            object_constant_buffer_->operator[] (render_window_->CurrentFrameIdx()).Write(dis, buffer);
+        }
         simple_->Draw(*this, scene);
     }
 } // namespace feng

@@ -34,7 +34,7 @@ namespace feng
 
 		auto window_style = WS_OVERLAPPEDWINDOW;
 
-		if (/*!allow_resizing*/ false)
+		if (/*!allow_resizing*/ true)
 		{
 			window_style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
 		}

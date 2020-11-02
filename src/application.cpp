@@ -58,7 +58,7 @@ namespace feng
             accum_frame++;
         if (accum_time > 1.0f)
         {
-            int fps = accum_frame / accum_time;
+            int fps = static_cast<int>(accum_frame / accum_time);
             std::wstring text = L"Feng Render, FPS:" + std::to_wstring(fps);
             SetWindowTextW(window_->GetWindowHandle(), text.c_str());
             accum_frame = 0;

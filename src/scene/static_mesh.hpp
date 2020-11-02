@@ -20,6 +20,8 @@ namespace feng
 
         D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView();
         D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();
+
+        virtual void Update([[maybe_unused]]float deltatime) override;
         static D3D12_INPUT_LAYOUT_DESC InputLayout();
 
     public:

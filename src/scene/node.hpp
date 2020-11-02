@@ -45,10 +45,10 @@ namespace feng
             return scale_;
         }
 
-        virtual void Update(float deltatime) { }
+        virtual void Update([[maybe_unused]]float deltatime) { }
 
-        Matrix MatrixView;
-        Matrix MatrixInvView;
+        Matrix MatrixWorld;
+        Matrix MatrixInvWorld;
     protected:
 
 

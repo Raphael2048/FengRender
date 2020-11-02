@@ -1,11 +1,19 @@
 
-cbuffer mtx : register(b0)
+cbuffer object_constant : register(b0)
+{
+    float4x4 world;
+    float4x4 inv_world;
+};
+
+cbuffer pass_constant : register(b1)
 {
     float4x4 view;
     float4x4 inv_view;
     float4x4 proj;
     float4x4 inv_proj;
-}
+    float4x4 view_proj;
+    float4x4 inv_view_proj;
+};
 
 struct VertexIn
 {
@@ -23,7 +31,9 @@ VertexOut VS(VertexIn vin)
 {
     VertexOut vout;
 
-    vout.pos = mul(float4(vin.pos, 1.0f), mul(view, proj));
+    float4x4 MVP = mul(view, proj);
+    MVP = mul(world, MVP);
+    vout.pos = mul(float4(vin.pos, 1.0f), MVP);
     // vout.pos = float4(vin.pos.xy, 0.5f, 1.0f);
     vout.color = float4(vin.uv, 1.0f, 1.0f);
     return vout;
