@@ -59,9 +59,10 @@ namespace feng
     public:
         ConstantBufferGroup(const Device& device, uint32_t count)
         {
+            buffers_.reserve(SIZE);
             for (int i = 0; i < SIZE; i++)
             {
-               buffers_.push_back(ConstantBuffer<T>(device, count));
+               buffers_.emplace_back(device, count);
             }
         }
 

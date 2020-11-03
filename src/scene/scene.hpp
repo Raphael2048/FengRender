@@ -8,7 +8,7 @@ namespace feng
     {
     public:
         void SetCamera(Camera* camera) { Camera.reset(camera); }
-        void AddStaticMesh(StaticMesh* mesh) { StaticMeshes.push_back(std::unique_ptr<StaticMesh>(mesh));  }
+        void AddStaticMesh(StaticMesh* mesh) { StaticMeshes.emplace_back(mesh);  }
         void Update(float delta);
         std::unique_ptr<Camera> Camera;
         std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;

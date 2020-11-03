@@ -9,12 +9,25 @@ namespace feng
         Vector3 pos;
         Vector2 uv;
     };
+    class Mesh
+    {
+    public:
+        Mesh(void* vertex_data, UINT vertex_count, void* index_data, UINT index_count);
+        void Init(const Device& device, ID3D12GraphicsCommandList* command);
+    public:
+        ComPtr<ID3DBlob> vertex_buffer_cpu_;
+        ComPtr<ID3DBlob> index_buffer_cpu_;
+        std::unique_ptr<Buffer> vertex_buffer_;
+        std::unique_ptr<Buffer> index_buffer_;
+        UINT vertex_count_;
+        UINT index_count_;
+        bool inited_ = false;
+    };
     class StaticMesh : public Node
     {
     public:
-        StaticMesh(const Vector3& position, const Vector3& rotation, const Vector3 scale,
-            // const Device& device, ID3D12GraphicsCommandList* command,
-            void* vertex_data, UINT vertex_size, void* index_data = nullptr, UINT index_size = 0);
+
+        StaticMesh(const Vector3& position, const Vector3& rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh);
 
         void Init(const Device& device, ID3D12GraphicsCommandList* commnad);
 
@@ -25,11 +38,12 @@ namespace feng
         static D3D12_INPUT_LAYOUT_DESC InputLayout();
 
     public:
-        ComPtr<ID3DBlob> vertex_buffer_cpu_;
-        ComPtr<ID3DBlob> index_buffer_cpu_;
-        std::unique_ptr<Buffer> vertex_buffer_;
-        std::unique_ptr<Buffer> index_buffer_;
-        UINT vertex_count_;
-        UINT index_count_;
+        std::shared_ptr<Mesh> mesh_;
+        // ComPtr<ID3DBlob> vertex_buffer_cpu_;
+        // ComPtr<ID3DBlob> index_buffer_cpu_;
+        // std::unique_ptr<Buffer> vertex_buffer_;
+        // std::unique_ptr<Buffer> index_buffer_;
+        // UINT vertex_count_;
+        // UINT index_count_;
     };
 } // namespace feng

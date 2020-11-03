@@ -77,7 +77,7 @@ namespace feng
             // command_list->SetGraphicsRootConstantBufferView(0, renderer.object_constant_buffer_->operator[] (idx).GetResource()->GetGPUVirtualAddress());
             // command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetCBVHeap()->GetGPUDescriptorHandleForHeapStart());
 
-            command_list->DrawIndexedInstanced(static_mesh->index_count_, 1, 0, 0, 0);
+            command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
             // ID3D12DescriptorHeap* descriptorHeaps[] = { cbvHeap}
         }
 

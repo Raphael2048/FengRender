@@ -1,5 +1,6 @@
 #include "feng.hpp"
 #include "scene/camera.hpp"
+#include "util/model_loader.hpp"
 #include <cstdio>
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,8 @@ class Demo : public Application
     protected:
     void OnInit() override
     {
+        auto m = AssimpMeshLoader::LoadModel("resources\\models\\sketchfab_knob.fbx");
+
         Camera* camera = new Camera(
             Vector3{0, 0, 20}, Vector3{0, 0, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
         );
@@ -53,22 +56,24 @@ class Demo : public Application
             4, 3, 7
         };
 
+        auto mesh = std::make_shared<Mesh>(
 
-        StaticMesh* mesh = new StaticMesh(
-            Vector3(0, 0, 0),
-            Vector3(0, 0, 0),
-            Vector3::One,
             vertices.data(), static_cast<UINT>(vertices.size()),
             indices.data(), static_cast<UINT>(indices.size())
         );
+        StaticMesh* mesh1 = new StaticMesh(
+            Vector3(0, 0, 0),
+            Vector3(0, 0, 0),
+            Vector3::One,
+            mesh
+        );
 
-        Root->AddStaticMesh(mesh);
+        Root->AddStaticMesh(mesh1);
         StaticMesh* mesh2 = new StaticMesh(
             Vector3(10, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            vertices.data(), static_cast<UINT>(vertices.size()),
-            indices.data(), static_cast<UINT>(indices.size())
+            mesh
         );
 
         Root->AddStaticMesh(mesh2);

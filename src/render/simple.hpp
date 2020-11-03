@@ -7,7 +7,6 @@
 #include "dx12/dx12_pipeline_state.hpp"
 #include "dx12/dx12_constant_buffer.hpp"
 #include "scene/scene.hpp"
-#include "util/helper.hpp"
 #include <array>
 namespace feng
 {
