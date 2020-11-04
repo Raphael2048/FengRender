@@ -18,7 +18,9 @@ cbuffer pass_constant : register(b1)
 struct VertexIn
 {
     float3 pos : POSITION;
-    float2 uv : COLOR;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float2 uv : TEXCOORD;
 };
 
 struct VertexOut

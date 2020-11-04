@@ -15,6 +15,7 @@ namespace feng
         sd.Width = window.GetWidth();
         sd.Height = window.GetHeight();
         sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        // sd.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
         sd.SampleDesc.Count = 1;
         sd.SampleDesc.Quality = 0;
         sd.BufferCount = BACK_BUFFER_SIZE;

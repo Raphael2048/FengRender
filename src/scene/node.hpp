@@ -2,7 +2,7 @@
 
 #include "util/defines.hpp"
 #include "util/math.hpp"
-
+#include "dx12/dx12_defines.hpp"
 namespace feng
 {
     class Node
@@ -45,6 +45,16 @@ namespace feng
             return scale_;
         }
 
+        bool IsCBDirty()
+        {
+            if (cb_dirty_ > 0)
+            {
+                --cb_dirty_;
+                return true;
+            }
+            return false;
+        }
+
         virtual void Update([[maybe_unused]]float deltatime) { }
 
         Matrix MatrixWorld;
@@ -58,5 +68,6 @@ namespace feng
         Vector3 scale_ = {1, 1, 1};
         Matrix transform_;
         bool dirty_ = true;
+        uint8_t cb_dirty_ = BACK_BUFFER_SIZE;
     };
 } // namespace feng

@@ -20,11 +20,6 @@ namespace feng
         TRY(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device_)));
         device_->SetName(L"DX12 Device");
 
-        // device_->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_));
-        _rtv_desc_size = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        _dsv_desc_size = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-        cbv_heap_size_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
         // COMMAND QUEUE CREATION
         D3D12_COMMAND_QUEUE_DESC queueDesc = {};
         queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -43,7 +38,7 @@ namespace feng
         // TRY(device_->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocator_)));
 
         command_allocators_.resize(BACK_BUFFER_SIZE);
-        for (auto& allocator : command_allocators_)
+        for (auto &allocator : command_allocators_)
         {
             TRY(device_->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(allocator.GetAddressOf())));
             NAME_D3D12RESOURCE(allocator);
@@ -54,24 +49,11 @@ namespace feng
         command_list_->Close();
         //
 
+        st_srv_heap_.reset( new DirectX::DescriptorHeap(device_, 10));
 
-        //RTV HEAP, 
-        D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-        rtvHeapDesc.NumDescriptors = 2;
-        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        rtvHeapDesc.NodeMask = 0;
-        TRY(device_->CreateDescriptorHeap(
-            &rtvHeapDesc, IID_PPV_ARGS(&_rtv_heap)));
+        dt_srv_heap_.reset( new DirectX::DescriptorHeap(device_, 10));
 
-        // Constant Buffer View CBV
-        D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-        cbvHeapDesc.NumDescriptors = 1;
-        cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	    cbvHeapDesc.NodeMask = 0;
-        TRY(device_->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(cbv_heap_.GetAddressOf())));
-
+        rtv_heap_.reset( new DirectX::DescriptorHeap(device_, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 10));
 
         fences_.resize(BACK_BUFFER_SIZE);
         for (int i = 0; i < BACK_BUFFER_SIZE; i++)
@@ -81,7 +63,7 @@ namespace feng
         }
     }
 
-    ID3D12GraphicsCommandList* Device::BeginCommand(uint8_t idx, ID3D12PipelineState* pso)
+    ID3D12GraphicsCommandList *Device::BeginCommand(uint8_t idx, ID3D12PipelineState *pso)
     {
         TRY(command_allocators_[idx]->Reset());
         TRY(command_list_->Reset(command_allocators_[idx].Get(), pso));
@@ -91,7 +73,7 @@ namespace feng
     void Device::EndCommand()
     {
         command_list_->Close();
-        ID3D12CommandList* cmds[] = {command_list_.Get() };
+        ID3D12CommandList *cmds[] = {command_list_.Get()};
         direct_queue_->ExecuteCommandLists(_countof(cmds), cmds);
     }
 

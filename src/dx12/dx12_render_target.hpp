@@ -39,9 +39,6 @@ namespace feng
         D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
         D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
-        const D3D12_VIEWPORT &GetViewport() const { return viewport_; }
-        const D3D12_RECT &GetScissorRect() const { return scissor_rect_; }
-
         void Swap();
 
         uint8_t CurrentFrameIdx() const { return frame_id_; }

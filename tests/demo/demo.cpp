@@ -10,62 +10,18 @@ class Demo : public Application
     protected:
     void OnInit() override
     {
-        auto m = AssimpMeshLoader::LoadModel("resources\\models\\sketchfab_knob.fbx");
-
         Camera* camera = new Camera(
             Vector3{0, 0, 20}, Vector3{0, 0, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
         );
         Root->SetCamera(camera);
 
-        std::array<Vertex, 8> vertices =
-        {
-            Vertex({Vector3(-1.0f, -1.0f, -1.0f), Vector2(0.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, +1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, +1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, -1.0f, -1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, -1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(-1.0f, +1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, +1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-            Vertex({Vector3(+1.0f, -1.0f, +1.0f), Vector2(1.0f, 1.0f)}),
-        };
+        auto m = AssimpMeshLoader::LoadModel("resources\\models\\cylinder.fbx");
 
-        std::array<std::uint32_t, 36> indices =
-        {
-            // front face
-            0, 1, 2,
-            0, 2, 3,
-
-            // back face
-            4, 6, 5,
-            4, 7, 6,
-
-            // left face
-            4, 5, 1,
-            4, 1, 0,
-
-            // right face
-            3, 2, 6,
-            3, 6, 7,
-
-            // top face
-            1, 5, 6,
-            1, 6, 2,
-
-            // bottom face
-            4, 0, 3,
-            4, 3, 7
-        };
-
-        auto mesh = std::make_shared<Mesh>(
-
-            vertices.data(), static_cast<UINT>(vertices.size()),
-            indices.data(), static_cast<UINT>(indices.size())
-        );
         StaticMesh* mesh1 = new StaticMesh(
             Vector3(0, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            mesh
+            m[0]
         );
 
         Root->AddStaticMesh(mesh1);
@@ -73,11 +29,10 @@ class Demo : public Application
             Vector3(10, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            mesh
+            m[0]
         );
 
         Root->AddStaticMesh(mesh2);
-
     }
 
     virtual void OnMouseWheel(short value) override

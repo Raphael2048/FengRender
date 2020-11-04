@@ -27,5 +27,7 @@ namespace feng
         //MatrixProj = Matrix::CreatePerspectiveFieldOfView(, aspect_, near_, far_);
 
         MatrixInvProj = MatrixProj.Invert();
+
+        cb_dirty_ = BACK_BUFFER_SIZE;
     }
 } // namespace feng

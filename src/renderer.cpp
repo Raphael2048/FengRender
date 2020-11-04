@@ -36,24 +36,30 @@ namespace feng
         uint8_t idx = render_window_->CurrentFrameIdx();
         GetDevice().Wait(idx);
         auto &camera = *(scene.Camera);
-        PassConstantBuffer constant;
-        // 交换的逆矩阵
-        constant.InvView = camera.MatrixWorld.Transpose();
-        constant.View = camera.MatrixInvWorld.Transpose();
-        constant.Proj = camera.MatrixProj.Transpose();
-        constant.InvProj = camera.MatrixInvProj.Transpose();
-        constant.ViewProj = constant.Proj * constant.View;
-        constant.InvViewProj = constant.InvView * constant.InvProj;
+        if (camera.IsCBDirty())
+        {
+            PassConstantBuffer constant;
+            // swaped matrix for camera
+            constant.InvView = camera.MatrixWorld.Transpose();
+            constant.View = camera.MatrixInvWorld.Transpose();
+            constant.Proj = camera.MatrixProj.Transpose();
+            constant.InvProj = camera.MatrixInvProj.Transpose();
+            constant.ViewProj = constant.Proj * constant.View;
+            constant.InvViewProj = constant.InvView * constant.InvProj;
 
-        pass_constant_buffer_->operator[] (idx).Write(0, constant);
+            pass_constant_buffer_->operator[] (idx).Write(0, constant);
+        }
 
         for(auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
-            auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
-            ObjectConstantBuffer buffer;
-            buffer.World = it->get()->MatrixWorld.Transpose();
-            buffer.InvWorld = it->get()->MatrixInvWorld.Transpose();
-            object_constant_buffer_->operator[] (idx).Write(dis, buffer);
+            if (it->get()->IsCBDirty())
+            {
+                auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
+                ObjectConstantBuffer buffer;
+                buffer.World = it->get()->MatrixWorld.Transpose();
+                buffer.InvWorld = it->get()->MatrixInvWorld.Transpose();
+                object_constant_buffer_->operator[] (idx).Write(dis, buffer);
+            }
         }
         simple_->Draw(*this, scene);
     }

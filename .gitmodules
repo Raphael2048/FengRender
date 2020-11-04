@@ -1,6 +1,3 @@
-[submodule "deps/DirectXTex"]
-	path = deps/DirectXTex
-	url = https://github.com/TeamWisp/DirectXTex.git
 [submodule "deps/DirectXTK12"]
 	path = deps/DirectXTK12
 	url = https://github.com/microsoft/DirectXTK12.git
