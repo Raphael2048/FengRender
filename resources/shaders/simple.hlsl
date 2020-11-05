@@ -1,3 +1,9 @@
+Texture2D t_base_color : register(t0);
+Texture2D t_normal : register(t1);
+Texture2D t_roghness : register(t2);
+Texture2D t_metallic : register(t3);
+
+SamplerState linear_sampler : register(s0);
 
 cbuffer object_constant : register(b0)
 {
@@ -26,7 +32,7 @@ struct VertexIn
 struct VertexOut
 {
     float4 pos : SV_POSITION;
-    float4 color : COLOR;
+    float2 uv  : TEXCOORD;
 };
 
 VertexOut VS(VertexIn vin)
@@ -37,14 +43,13 @@ VertexOut VS(VertexIn vin)
     MVP = mul(world, MVP);
     vout.pos = mul(float4(vin.pos, 1.0f), MVP);
     // vout.pos = float4(vin.pos.xy, 0.5f, 1.0f);
-    vout.color = float4(vin.uv, 1.0f, 1.0f);
+    vout.uv = vin.uv;
     return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    // float4 collll = float4(0.0f, 0.0f, 1.0f, 1.0f);
-    // return view[1];
-    return pin.color;
-    // return collll;
+    float3 color = t_base_color.Sample(linear_sampler, pin.uv).rgb;
+    color.z *= t_metallic.Sample(linear_sampler, pin.uv).r;
+    return float4(color, 1.0f);
 }

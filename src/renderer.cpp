@@ -69,4 +69,13 @@ namespace feng
         }
         simple_->Draw(*this, scene);
     }
+
+    std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2>& Renderer::GetStaticSamplers()
+    {
+        static std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> samplers = {
+            CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP},
+            CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR}
+        };
+        return samplers;
+    }
 } // namespace feng

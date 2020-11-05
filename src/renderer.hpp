@@ -5,7 +5,7 @@
 #include "dx12/dx12_render_target.hpp"
 #include "scene/camera.hpp"
 #include "render/simple.hpp"
-
+#include <array>
 namespace feng
 {
     struct PassConstantBuffer
@@ -32,10 +32,11 @@ namespace feng
         Renderer(const Window &window);
         Device &GetDevice() { return *device_; }
 
-        
         RenderWindow& GetRenderWindow() { return *render_window_; }
         void Init(const Scene& scene);
         void Draw(const Scene& scene);
+
+        std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2>& GetStaticSamplers();
 
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> pass_constant_buffer_;
         std::unique_ptr<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>> object_constant_buffer_;

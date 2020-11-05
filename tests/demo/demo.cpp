@@ -13,7 +13,7 @@ class Demo : public Application
         );
         Root->SetCamera(camera);
 
-        auto m = AssimpMeshLoader::LoadModel("resources\\models\\ball.fbx");
+        auto m = AssimpMeshLoader::LoadModel("resources\\models\\cube.fbx");
 
         auto material = std::make_shared<StaticMaterial>(
             L"resources\\textures\\rusted_iron\\albedo.dds",
