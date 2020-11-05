@@ -1,4 +1,5 @@
 #include "scene/static_mesh.hpp"
+#include "dx12/dx12_device.hpp"
 #include <d3dcompiler.h>
 namespace feng
 {
@@ -12,12 +13,12 @@ namespace feng
         CopyMemory(index_buffer_cpu_->GetBufferPointer(), index_data, sizeof(uint32_t) * index_count_);
     }
 
-    void Mesh::Init(const Device &device, ID3D12GraphicsCommandList *command)
+    void Mesh::Init(const Device& device, DirectX::ResourceUploadBatch& uploader)
     {
         if (!inited_)
         {
-            vertex_buffer_.reset(new Buffer(device, vertex_buffer_cpu_->GetBufferPointer(), sizeof(Vertex) * vertex_count_, command));
-            index_buffer_.reset(new Buffer(device, index_buffer_cpu_->GetBufferPointer(), sizeof(uint32_t) * index_count_, command));
+            vertex_buffer_.reset(new Buffer(device.GetDevice(), uploader,  vertex_buffer_cpu_->GetBufferPointer(), vertex_count_, sizeof(Vertex)));
+            index_buffer_.reset(new Buffer(device.GetDevice(),uploader,  index_buffer_cpu_->GetBufferPointer(), index_count_, sizeof(uint32_t)));
             inited_ = true;
         }
     }
@@ -37,9 +38,9 @@ namespace feng
     {
     }
 
-    void StaticMesh::Init(const Device &device, ID3D12GraphicsCommandList *command)
+    void StaticMesh::Init(const Device& device, DirectX::ResourceUploadBatch& uploader)
     {
-        mesh_->Init(device, command);
+        mesh_->Init(device, uploader);
     }
 
     D3D12_VERTEX_BUFFER_VIEW StaticMesh::GetVertexBufferView()

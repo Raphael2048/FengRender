@@ -4,6 +4,7 @@
 #include "d3dx12.h"
 #include "render/simple.hpp"
 #include "scene/scene.hpp"
+#include "ResourceUploadBatch.h"
 namespace feng
 {
     Renderer::Renderer(const Window &window)
@@ -14,21 +15,26 @@ namespace feng
 
     void Renderer::Init(const Scene& scene)
     {
-        auto command_list = device_->BeginCommand(0);
+        DirectX::ResourceUploadBatch uploader(device_->GetDevice());
+        uploader.Begin();
 
         for(auto& static_mesh : scene.StaticMeshes)
         {
-            static_mesh->Init(GetDevice(), command_list);
+            static_mesh->Init(GetDevice(), uploader);
         }
         
      
         pass_constant_buffer_ = std::make_unique<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), 1);
         object_constant_buffer_ = std::make_unique<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), scene.StaticMeshes.size());
+        
+        auto ending_event = uploader.End(device_->GetCommandQueue());
+        device_->Signal(0);
+        device_->Wait(0);
+
+        ending_event.wait();
+        
         simple_.reset(new Simple());
         simple_->Build(*this);
-
-        device_->EndCommand();
-        device_->FlushCommand(0);
     }
 
     void Renderer::Draw(const Scene& scene)

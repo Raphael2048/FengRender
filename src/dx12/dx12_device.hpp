@@ -10,7 +10,7 @@ namespace feng
     public:
         Device(bool debug = true);
 
-        ID3D12Device5 *GetDevice() const { return device_; }
+        ID3D12Device *GetDevice() const { return device_.Get(); }
 
         IDXGIFactory6 *GetFactory() const { return factory_; }
 
@@ -18,13 +18,15 @@ namespace feng
 
         ID3D12GraphicsCommandList* BeginCommand(uint8_t index, ID3D12PipelineState* pso = nullptr);
 
-        DirectX::DescriptorHeap& GetSTSRVHeap() { return *st_srv_heap_; }
+        DirectX::DescriptorHeap& GetSTSRVHeap() const { return *st_srv_heap_; }
 
-        DirectX::DescriptorHeap& GetDTSRVHeap() { return *dt_srv_heap_; }
+        size_t GetSTSRVAllocIndex() { return st_srv_alloc_index++; }
+
+        DirectX::DescriptorHeap& GetDTSRVHeap() const { return *dt_srv_heap_; } 
 
         size_t GetDTSRVAllocIndex() { return dt_srv_alloc_index_++; }
 
-        DirectX::DescriptorHeap& GetRVTHeap() { return *rtv_heap_; }
+        DirectX::DescriptorHeap& GetRTVHeap() const { return *rtv_heap_; } 
 
         size_t GetRTVAllocIndex() { return rtv_alloc_index_++; }
 
@@ -37,9 +39,7 @@ namespace feng
         void Signal(uint8_t idx);
 
     private:
-        // ID3D12Debug* debug;
-        //IDXGIAdapter4 *_adapter;
-        ID3D12Device5 *device_;
+        ComPtr<ID3D12Device> device_;
         IDXGIFactory6 *factory_;
 
         ID3D12Debug1 *debug_ = nullptr;
@@ -51,6 +51,7 @@ namespace feng
 
         // Heap for Static Textures SRV
         std::unique_ptr<DirectX::DescriptorHeap> st_srv_heap_;
+        size_t st_srv_alloc_index = 0;
 
         // heap for dynamic textires' SRV
         std::unique_ptr<DirectX::DescriptorHeap> dt_srv_heap_;
