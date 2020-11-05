@@ -4,7 +4,6 @@
 #include "dx12/dx12_constant_buffer.hpp"
 #include "dx12/dx12_root_signature.hpp"
 #include "dx12/dx12_buffer.hpp"
-#include "dx12/dx12_pipeline_state.hpp"
 #include "dx12/dx12_constant_buffer.hpp"
 #include "scene/scene.hpp"
 namespace feng
@@ -21,7 +20,8 @@ namespace feng
     private:
         std::unique_ptr<GraphicsShader> shader;
         std::unique_ptr<RootSignature> signature_;
-        std::unique_ptr<PipelineState> pso_;
+        // std::unique_ptr<PipelineState> pso_;
+        ComPtr<ID3D12PipelineState> pso_;
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout_;
 
 

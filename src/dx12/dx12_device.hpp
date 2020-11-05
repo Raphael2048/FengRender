@@ -30,6 +30,10 @@ namespace feng
 
         size_t GetRTVAllocIndex() { return rtv_alloc_index_++; }
 
+        DirectX::DescriptorHeap& GetDSVHeap() const { return *dsv_heap_; }
+
+        size_t GetDSVAllocIndex() {return dsv_alloc_index_++;}
+
         void EndCommand();
 
         void FlushCommand(uint8_t idx);
@@ -60,6 +64,9 @@ namespace feng
         // heap for RTV
         std::unique_ptr<DirectX::DescriptorHeap> rtv_heap_;
         size_t rtv_alloc_index_ = 0;
+
+        std::unique_ptr<DirectX::DescriptorHeap> dsv_heap_;
+        size_t dsv_alloc_index_ = 0;
 
         std::vector<ComPtr<ID3D12CommandAllocator>> command_allocators_;
         ComPtr<ID3D12GraphicsCommandList> command_list_;

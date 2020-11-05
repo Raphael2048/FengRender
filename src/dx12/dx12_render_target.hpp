@@ -25,7 +25,7 @@ namespace feng
         // ID3D12DescriptorHeap *ds_heap_;
     };
 
-    class RenderTarget : public RenderTargetBase
+    class RenderTarget
     {
     public:
         RenderTarget(int buffers);
@@ -34,7 +34,7 @@ namespace feng
     };
 
     class Window;
-    class RenderWindow : public RenderTargetBase
+    class RenderWindow
     {
     public:
         RenderWindow(Device &device, const Window &window);
@@ -45,9 +45,13 @@ namespace feng
 
         uint8_t CurrentFrameIdx() const { return frame_id_; }
 
-        virtual void SetupCommandList(ComPtr<ID3D12GraphicsCommandList> command) override;
+        void SetupCommandList(ComPtr<ID3D12GraphicsCommandList> command);
 
     private:
+            uint32_t width_;
+        uint32_t height_;
+
+        Device* device_;
         std::array<ComPtr<ID3D12Resource>, BACK_BUFFER_SIZE> rtv_;
         size_t rtv_begin_index_;
 

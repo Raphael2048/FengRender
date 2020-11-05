@@ -1,7 +1,7 @@
 #pragma once
 #include "dx12_defines.hpp"
 #include "DDSTextureLoader.h"
-#include <unordered_map>
+// #include <unordered_map>
 namespace feng
 {
     class Device;
@@ -9,7 +9,6 @@ namespace feng
     {
     public:
         StaticTexture(Device &device, DirectX::ResourceUploadBatch &uplaoder, const std::wstring &path, bool srgb = false);
-        D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress() { return gpu_address_; };
         size_t GetSRVIndex() {return srv_heap_index_; };
     protected:
         // DXGI_FORMAT format_;
@@ -17,7 +16,6 @@ namespace feng
         // UINT height;
         ComPtr<ID3D12Resource> buffer_;
         size_t srv_heap_index_;
-        D3D12_GPU_VIRTUAL_ADDRESS gpu_address_;
     };
 
     class StaticMaterial

@@ -41,13 +41,13 @@ namespace feng
         psoDesc.SampleDesc.Quality = 0;
         // psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
         psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
-        pso_ = std::make_unique<PipelineState>(renderer.GetDevice(), psoDesc);
+        renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
     }
 
     void Simple::Draw(Renderer &renderer, const Scene &scene)
     {
         uint8_t idx = renderer.GetRenderWindow().CurrentFrameIdx();
-        auto command_list = renderer.GetDevice().BeginCommand(0, pso_->GetPipelineState());
+        auto command_list = renderer.GetDevice().BeginCommand(0, pso_.Get());
         RenderWindow &render_window = renderer.GetRenderWindow();
         render_window.SetupCommandList(command_list);
 
