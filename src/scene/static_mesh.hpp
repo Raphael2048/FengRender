@@ -31,9 +31,9 @@ namespace feng
     {
     public:
 
-        StaticMesh(const Vector3& position, const Vector3& rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh);
+        StaticMesh(const Vector3& position, const Vector3& rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh, std::shared_ptr<StaticMaterial> material);
 
-        void Init(const Device& device, DirectX::ResourceUploadBatch& uploader);
+        void Init(Device& device, DirectX::ResourceUploadBatch& uploader);
 
         D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView();
         D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();

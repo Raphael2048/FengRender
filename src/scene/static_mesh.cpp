@@ -34,13 +34,15 @@ namespace feng
         return {layout.data(), (UINT)layout.size()};
     }
 
-    StaticMesh::StaticMesh(const Vector3 &position, const Vector3 &rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh) : Node(position, rotation, scale), mesh_(mesh)
+    StaticMesh::StaticMesh(const Vector3 &position, const Vector3 &rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh, std::shared_ptr<StaticMaterial> material) 
+    : Node(position, rotation, scale), mesh_(mesh), material_(material)
     {
     }
 
-    void StaticMesh::Init(const Device& device, DirectX::ResourceUploadBatch& uploader)
+    void StaticMesh::Init(Device& device, DirectX::ResourceUploadBatch& uploader)
     {
         mesh_->Init(device, uploader);
+        material_->Init(device, uploader);
     }
 
     D3D12_VERTEX_BUFFER_VIEW StaticMesh::GetVertexBufferView()

@@ -39,13 +39,13 @@ namespace feng
 			return mesh_vector;
 		}
 
-        for (int i = 0; i < scene->mNumMeshes; ++i)
+        for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
         {
             aiMesh* mesh = scene->mMeshes[i];
 			Vertex* vertex_array = (Vertex*)std::malloc(sizeof(Vertex) * mesh->mNumVertices);
 			//std::vector<Vertex> vertex_array;
 			//vertex_array.resize(mesh->mNumVertices);
-			for(int j = 0; j < mesh->mNumVertices; j++)
+			for(unsigned int j = 0; j < mesh->mNumVertices; j++)
 			{
 				CV3(vertex_array[j].pos, mesh->mVertices[j]);
 				CV3(vertex_array[j].normal, mesh->mNormals[j]);
@@ -54,7 +54,7 @@ namespace feng
 			}
 
 			uint32_t* index_array = (uint32_t*)std::malloc(sizeof(uint32_t) * mesh->mNumFaces * 3);
-			for(int j = 0; j < mesh->mNumFaces; j++)
+			for(unsigned int j = 0; j < mesh->mNumFaces; j++)
 			{
 				std::memcpy(index_array + j * 3, mesh->mFaces[j].mIndices, sizeof(uint32_t) * 3);
 			}

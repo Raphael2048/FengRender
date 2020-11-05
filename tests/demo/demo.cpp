@@ -1,6 +1,4 @@
 #include "feng.hpp"
-#include "scene/camera.hpp"
-#include "util/model_loader.hpp"
 #include <cstdio>
 #include <algorithm>
 #include <cmath>
@@ -15,21 +13,31 @@ class Demo : public Application
         );
         Root->SetCamera(camera);
 
-        auto m = AssimpMeshLoader::LoadModel("resources\\models\\cylinder.fbx");
+        auto m = AssimpMeshLoader::LoadModel("resources\\models\\ball.fbx");
+
+        auto material = std::make_shared<StaticMaterial>(
+            L"resources\\textures\\rusted_iron\\albedo.dds",
+            L"resources\\textures\\rusted_iron\\normal.dds",
+            L"resources\\textures\\rusted_iron\\roughness.dds",
+            L"resources\\textures\\rusted_iron\\metallic.dds"
+        );
 
         StaticMesh* mesh1 = new StaticMesh(
             Vector3(0, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            m[0]
+            m[0],
+            material
         );
-
         Root->AddStaticMesh(mesh1);
+
+        
         StaticMesh* mesh2 = new StaticMesh(
             Vector3(10, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
-            m[0]
+            m[0],
+            material
         );
 
         Root->AddStaticMesh(mesh2);

@@ -16,13 +16,17 @@ namespace feng
         // UINT width;
         // UINT height;
         ComPtr<ID3D12Resource> buffer_;
+        size_t srv_heap_index_;
         D3D12_GPU_VIRTUAL_ADDRESS gpu_address_;
+
+    private:
+        Device* device_;
     };
 
     class StaticMaterial
     {
     public:
-        StaticMaterial(const std::wstring& base_color, const std::wstring& normal, const std::wstring& roughness_, const std::wstring& metallic);
+        StaticMaterial(const std::wstring& base_color, const std::wstring& normal, const std::wstring& roughness, const std::wstring& metallic);
         void Init(Device &device, DirectX::ResourceUploadBatch &uploader);
     private:
         std::wstring base_color_path_, normal_path_, roughness_path_, metallic_path_;
