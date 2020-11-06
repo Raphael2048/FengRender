@@ -11,9 +11,6 @@ namespace feng
         StaticTexture(Device &device, DirectX::ResourceUploadBatch &uplaoder, const std::wstring &path, bool srgb = false);
         size_t GetSRVIndex() {return srv_heap_index_; };
     protected:
-        // DXGI_FORMAT format_;
-        // UINT width;
-        // UINT height;
         ComPtr<ID3D12Resource> buffer_;
         size_t srv_heap_index_;
     };

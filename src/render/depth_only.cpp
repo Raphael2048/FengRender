@@ -1,6 +1,7 @@
 #include "render/depth_only.hpp"
 #include "renderer.hpp"
 #include "scene/scene.hpp"
+#include "dx12/dx12_shader.hpp"
 namespace feng
 {
     void DepthOnly::Build(Renderer& renderer)
@@ -13,7 +14,7 @@ namespace feng
 
         CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-        signature_ = std::make_unique<RootSignature>(renderer.GetDevice(), rootSigDesc);
+        signature_ = Shader::CreateRootSignature(renderer.GetDevice().GetDevice(), rootSigDesc);
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
         ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -23,7 +24,7 @@ namespace feng
 
         // Just need pos in depth only pass
         psoDesc.InputLayout = input_layput;
-        psoDesc.pRootSignature = signature_->GetRootSignature();
+        psoDesc.pRootSignature = signature_.Get();
         shader->FillPSO(psoDesc);
 
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -47,7 +48,6 @@ namespace feng
 
     void DepthOnly::Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList* command_list, uint8_t idx)
     {
-
         command_list->SetPipelineState(pso_.Get());
         command_list->RSSetViewports(1, &renderer.viewport_);
         command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
@@ -55,11 +55,12 @@ namespace feng
         renderer.t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
         auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(renderer.t_depth_->GetDSVHeapIndex());
+        
+        command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
         command_list->ClearDepthStencilView( depth_descriptor
             , D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
-        command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
 
-        command_list->SetGraphicsRootSignature(signature_->GetRootSignature());
+        command_list->SetGraphicsRootSignature(signature_.Get());
 
         command_list->SetGraphicsRootConstantBufferView(1, renderer.pass_constant_buffer_->operator[] (idx).GetResource()->GetGPUVirtualAddress());
 

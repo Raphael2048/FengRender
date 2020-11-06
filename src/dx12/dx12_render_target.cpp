@@ -15,8 +15,7 @@ namespace feng
         DXGI_SWAP_CHAIN_DESC1 sd;
         sd.Width = window.GetWidth();
         sd.Height = window.GetHeight();
-        sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        // sd.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+        sd.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
         sd.SampleDesc.Count = 1;
         sd.SampleDesc.Quality = 0;
         sd.BufferCount = BACK_BUFFER_SIZE;
@@ -34,9 +33,6 @@ namespace feng
         f->CreateSwapChainForHwnd(device.GetCommandQueue(), window.GetWindowHandle(), &sd, NULL, NULL, &temp_chain);
         swap_chain_ = static_cast<IDXGISwapChain4 *>(temp_chain);
         frame_id_ = swap_chain_->GetCurrentBackBufferIndex();
-
-        // Init Render Target Views
-        // rt_buffers_.resize(BACK_BUFFER_SIZE);
 
         auto& rtv_heap = device.GetRTVHeap();
 
@@ -61,7 +57,6 @@ namespace feng
 
     ID3D12Resource *RenderWindow::CurrentBackBuffer() const
     {
-        // return rt_buffers_[frame_id_];
         return rtv_[frame_id_].Get();
     }
 
@@ -69,10 +64,6 @@ namespace feng
     {
         return device_->GetRTVHeap().GetCpuHandle(rtv_begin_index_ + frame_id_);
     }
-    // D3D12_CPU_DESCRIPTOR_HANDLE RenderWindow::DepthStencilView() const
-    // {
-    //     return ds_heap_->GetCPUDescriptorHandleForHeapStart();
-    // }
 
     void RenderWindow::Swap()
     {

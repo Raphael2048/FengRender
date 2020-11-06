@@ -9,6 +9,7 @@ namespace feng
     class Shader
     {
     public:
+        static ComPtr<ID3D12RootSignature> CreateRootSignature(ID3D12Device* device, const CD3DX12_ROOT_SIGNATURE_DESC& desc);
         // virtual void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC desc);
     };
     class GraphicsShader : public Shader

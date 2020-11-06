@@ -46,9 +46,21 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
-float4 PS(VertexOut pin) : SV_Target
+struct PixelOutput
 {
-    float3 color = t_base_color.Sample(linear_sampler, pin.uv).rgb;
-    color.z *= t_metallic.Sample(linear_sampler, pin.uv).r;
-    return float4(color, 1.0f);
+    float4 base_color;
+    float4 world_normal;
+    float2 roughness_metallic;
+};
+
+PixelOutput PS(VertexOut pin) : SV_Target
+{
+    PixelOutput pout;
+    pout.base_color.rgb = t_base_color.Sample(linear_sampler, pin.uv).rgb;
+    pout.base_color.a = 0.0f;
+    pout.world_normal.rgb = t_normal.Sample(linear_sampler, pin.uv).rgb;
+    pout.world_normal.a = 0.0f;
+    pout.roughness_metallic.x = t_roghness.Sample(linear_sampler, pin.uv).r;
+    pout.roughness_metallic.y = t_metallic.Sample(linear_sampler, pin.uv).r;
+    return pout;
 }

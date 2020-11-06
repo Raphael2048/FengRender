@@ -2,6 +2,20 @@
 #include "d3dcompiler.h"
 namespace feng
 {
+    ComPtr<ID3D12RootSignature> Shader::CreateRootSignature(ID3D12Device* device, const CD3DX12_ROOT_SIGNATURE_DESC& desc)
+    {
+        ComPtr<ID3DBlob> serialize, error;
+        HRESULT hr =  D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &serialize, &error);
+        if (error != nullptr)
+        {
+            ::OutputDebugStringA((char*)error->GetBufferPointer());
+        }
+        TRY(hr);
+        ComPtr<ID3D12RootSignature> signature;
+        TRY(device->CreateRootSignature(0, serialize->GetBufferPointer(), serialize->GetBufferSize(), IID_PPV_ARGS(&signature)));
+        return signature;
+    }
+
     GraphicsShader::GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO *defines)
     {
         vs_bytes_ = CompileShader(filename, defines, "VS", "vs_5_0");

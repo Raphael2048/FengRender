@@ -20,13 +20,13 @@ namespace feng
 
         CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 1, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-        signature_ = std::make_unique<RootSignature>(renderer.GetDevice(), rootSigDesc);
+        signature_ = Shader::CreateRootSignature(renderer.GetDevice().GetDevice(), rootSigDesc);
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
         ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
         psoDesc.InputLayout = StaticMesh::InputLayout();
-        psoDesc.pRootSignature = signature_->GetRootSignature();
+        psoDesc.pRootSignature = signature_.Get();
         shader->FillPSO(psoDesc);
 
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -35,7 +35,7 @@ namespace feng
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+        psoDesc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
         // psoDesc
         // psoDesc.RTVFormats[0] = mBackBufferFormat;
         psoDesc.SampleDesc.Count = 1;
@@ -52,7 +52,7 @@ namespace feng
         RenderWindow &render_window = renderer.GetRenderWindow();
         render_window.SetupCommandList(command_list);
 
-        command_list->SetGraphicsRootSignature(signature_->GetRootSignature());
+        command_list->SetGraphicsRootSignature(signature_.Get());
 
         command_list->SetGraphicsRootConstantBufferView(2, renderer.pass_constant_buffer_->operator[] (idx).GetResource()->GetGPUVirtualAddress());
 
