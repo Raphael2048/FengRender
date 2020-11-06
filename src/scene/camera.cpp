@@ -23,8 +23,10 @@ namespace feng
         MatrixWorld *= Matrix::CreateTranslation(position_);
         MatrixInvWorld = MatrixWorld.Invert();
 
-        DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(fov_), aspect_, near_, far_));
-        //MatrixProj = Matrix::CreatePerspectiveFieldOfView(, aspect_, near_, far_);
+        // DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(fov_), aspect_, near_, far_));
+
+        // REVERSE-Z
+        DirectX::XMStoreFloat4x4(&MatrixProj, DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(fov_), aspect_, far_, near_));
 
         MatrixInvProj = MatrixProj.Invert();
 

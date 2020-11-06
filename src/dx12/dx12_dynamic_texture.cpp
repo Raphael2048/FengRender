@@ -25,7 +25,7 @@ namespace feng
         optClear.Format = write_format;
         if (is_depth)
         {
-            optClear.DepthStencil.Depth = 1.0f;
+            optClear.DepthStencil.Depth = 0.0f;
             optClear.DepthStencil.Stencil = 0;
         }
         else
@@ -52,11 +52,11 @@ namespace feng
         srvDesc.Texture2D.MipLevels = 1;
         srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
         srvDesc.Texture2D.PlaneSlice = 0;
-        dt_srv_heap_index_ = device.GetDTSRVAllocIndex();
+        srv_heap_index_ = device.GetSRVAllocIndex();
         device.GetDevice()->CreateShaderResourceView(
             buffer_.Get(),
             &srvDesc,
-            device.GetDTSRVHeap().GetCpuHandle(dt_srv_heap_index_));
+            device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
 
         if (is_depth)
         {
@@ -84,5 +84,20 @@ namespace feng
                 &rtvDesc,
                 device.GetRTVHeap().GetCpuHandle(rtv_heap_index_));
         }
+
+        current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
+    }
+
+    DynamicTexture::DynamicTexture(Device& device, UINT64 width, UINT64 height, DXGI_FORMAT unified_format):
+        DynamicTexture(device, width, height, unified_format, unified_format, unified_format){}
+
+
+
+    void DynamicTexture::TransitionState(ID3D12GraphicsCommandList* command, D3D12_RESOURCE_STATES state)
+    {
+        if(state == current_state_) return;
+        command->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+            buffer_.Get(), current_state_, state));
+        current_state_ = state;
     }
 } // namespace feng

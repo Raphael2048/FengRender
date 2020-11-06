@@ -49,36 +49,6 @@ namespace feng
             device.GetDevice()->CreateRenderTargetView(rtv_[i].Get(), nullptr, rtv_heap.GetCpuHandle(device.GetRTVAllocIndex()));
         }
 
-        // Init Depth Stencil View
-        // D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-        // dsvHeapDesc.NumDescriptors = 1;
-        // dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        // dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        // TRY(device.GetDevice()->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&ds_heap_)));
-
-        // NAME_D3D12RESOURCE(ds_heap_);
-
-        // D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-        // depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-        // depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-        // depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-        // CD3DX12_HEAP_PROPERTIES heap_properties_default = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-        // CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32_TYPELESS, width_, height_, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
-        // TRY(device.GetDevice()->CreateCommittedResource(&heap_properties_default,
-        //                                                 D3D12_HEAP_FLAG_NONE,
-        //                                                 &tex_desc,
-        //                                                 D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        //                                                 &depthOptimizedClearValue,
-        //                                                 IID_PPV_ARGS(&ds_buffer_)));
-        // NAME_D3D12RESOURCE(ds_buffer_);
-
-        // D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-        // depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
-        // depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-        // depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
-        // device.GetDevice()->CreateDepthStencilView(ds_buffer_, &depthStencilDesc, DepthStencilView());
-
         viewport_.TopLeftX = 0;
         viewport_.TopLeftY = 0;
         viewport_.Width = static_cast<float>(width_);

@@ -48,7 +48,7 @@ namespace feng
         void SetupCommandList(ComPtr<ID3D12GraphicsCommandList> command);
 
     private:
-            uint32_t width_;
+        uint32_t width_;
         uint32_t height_;
 
         Device* device_;

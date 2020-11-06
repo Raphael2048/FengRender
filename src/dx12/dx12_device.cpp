@@ -49,9 +49,7 @@ namespace feng
         command_list_->Close();
         //
 
-        st_srv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), 10));
-
-        dt_srv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), 10));
+        srv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), 10));
 
         rtv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 10));
 

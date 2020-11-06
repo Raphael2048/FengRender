@@ -16,8 +16,8 @@ namespace feng
         DirectX::CreateDDSTextureFromFileEx(
             device.GetDevice(), uploader, path.data(), 0, D3D12_RESOURCE_FLAG_NONE, flags,
             buffer_.GetAddressOf(), nullptr, nullptr);
-        srv_heap_index_ = device.GetSTSRVAllocIndex();
-        DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSTSRVHeap().GetCpuHandle(srv_heap_index_));
+        srv_heap_index_ = device.GetSRVAllocIndex();
+        DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
     }
 
     //std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> StaticMaterial::textures_{};

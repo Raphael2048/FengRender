@@ -11,6 +11,17 @@ namespace feng
     {
         device_ = std::make_unique<Device>();
         render_window_ = std::make_unique<RenderWindow>(*device_, window);
+        width_ = window.GetWidth();
+        height_ = window.GetHeight();
+
+        viewport_.TopLeftX = 0;
+        viewport_.TopLeftY = 0;
+        viewport_.Width = static_cast<float>(width_);
+        viewport_.Height = static_cast<float>(height_);
+        viewport_.MinDepth = 0.0f;
+        viewport_.MaxDepth = 1.0f;
+
+        scissor_rect_ = {0, 0, static_cast<LONG>(width_), static_cast<LONG>(height_)};
     }
 
     void Renderer::Init(const Scene& scene)
@@ -33,8 +44,18 @@ namespace feng
 
         ending_event.wait();
         
+
+        t_depth_.reset(
+            new DynamicTexture(
+               GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT
+            )
+        );
+
         simple_.reset(new Simple());
         simple_->Build(*this);
+
+        depth_only_.reset(new DepthOnly());
+        depth_only_->Build(*this);
     }
 
     void Renderer::Draw(const Scene& scene)
@@ -67,7 +88,25 @@ namespace feng
                 object_constant_buffer_->operator[] (idx).Write(dis, buffer);
             }
         }
-        simple_->Draw(*this, scene);
+        auto command_list = GetDevice().BeginCommand(idx, nullptr);
+
+        ID3D12DescriptorHeap *heaps[] = {
+            device_->GetSRVHeap().Heap(), device_->GetDSVHeap().Heap(),
+            device_->GetRTVHeap().Heap()
+            };
+        command_list->SetDescriptorHeaps(1, heaps);
+
+        depth_only_->Draw(*this, scene, command_list, idx);
+
+        simple_->Draw(*this, scene, command_list, idx);
+
+        command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_window_->CurrentBackBuffer(),
+                                                                               D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+        device_->EndCommand();
+        render_window_->Swap();
+        // IDX + 1
+        device_->Signal(render_window_->CurrentFrameIdx());
     }
 
     std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2>& Renderer::GetStaticSamplers()

@@ -18,13 +18,9 @@ namespace feng
 
         ID3D12GraphicsCommandList* BeginCommand(uint8_t index, ID3D12PipelineState* pso = nullptr);
 
-        DirectX::DescriptorHeap& GetSTSRVHeap() const { return *st_srv_heap_; }
+        DirectX::DescriptorHeap& GetSRVHeap() const { return *srv_heap_; }
 
-        size_t GetSTSRVAllocIndex() { return st_srv_alloc_index++; }
-
-        DirectX::DescriptorHeap& GetDTSRVHeap() const { return *dt_srv_heap_; } 
-
-        size_t GetDTSRVAllocIndex() { return dt_srv_alloc_index_++; }
+        size_t GetSRVAllocIndex() { return srv_alloc_index++; }
 
         DirectX::DescriptorHeap& GetRTVHeap() const { return *rtv_heap_; } 
 
@@ -53,13 +49,9 @@ namespace feng
         ID3D12CommandQueue *compute_queue_;
         ID3D12CommandQueue *copy_queue_;
 
-        // Heap for Static Textures SRV
-        std::unique_ptr<DirectX::DescriptorHeap> st_srv_heap_;
-        size_t st_srv_alloc_index = 0;
-
-        // heap for dynamic textires' SRV
-        std::unique_ptr<DirectX::DescriptorHeap> dt_srv_heap_;
-        size_t dt_srv_alloc_index_ = 0;
+        // Heap for SRV
+        std::unique_ptr<DirectX::DescriptorHeap> srv_heap_;
+        size_t srv_alloc_index = 0;
 
         // heap for RTV
         std::unique_ptr<DirectX::DescriptorHeap> rtv_heap_;
