@@ -1,12 +1,12 @@
 #pragma once
 
-#include "dx12/dx12_shader.hpp"
+#include "render/effect_base.hpp"
 
 namespace feng
 {
     class Renderer;
     class Scene;
-    class ToneMapping
+    class ToneMapping : public EffectBase
     {
     public:
         ToneMapping(Renderer& renderer);

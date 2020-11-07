@@ -23,30 +23,20 @@ namespace feng
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
         ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-        psoDesc.InputLayout = StaticMesh::InputLayout();
+        psoDesc.InputLayout = renderer.pp_input_layout_;
         psoDesc.pRootSignature = signature_.Get();
         shader->FillPSO(psoDesc);
 
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-        auto depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-        depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-        depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-
-        psoDesc.DepthStencilState = depthDesc;
+        // No depth test
+        psoDesc.DepthStencilState.DepthEnable = false;
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psoDesc.NumRenderTargets = 3;
-        // Base Color
-        psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        // World Normal
-        psoDesc.RTVFormats[1] = DXGI_FORMAT_R10G10B10A2_UNORM;
-        // Roughness & Metallic
-        psoDesc.RTVFormats[2] = DXGI_FORMAT_R8G8_UNORM;
-
-        // Depth
-        psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+        psoDesc.NumRenderTargets = 1;
+        // Final Output
+        psoDesc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
         psoDesc.SampleDesc.Count = 1;
         psoDesc.SampleDesc.Quality = 0;
         renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
@@ -54,6 +44,24 @@ namespace feng
 
     void ToneMapping::Draw(Renderer &renderer, ID3D12GraphicsCommandList* command_list, uint8_t idx)
     {
+        command_list->SetPipelineState(pso_.Get());
+        command_list->RSSetViewports(1, &renderer.viewport_);
+        command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
 
+        command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderer.GetRenderWindow().CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+        
+        renderer.t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        
+        command_list->OMSetRenderTargets(1, &renderer.GetRenderWindow().CurrentBackBufferView(), FALSE, nullptr);
+
+        command_list->SetGraphicsRootSignature(signature_.Get());
+
+        command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(renderer.t_gbuffer_base_color_->GetSRVHeapIndex()));
+
+
+        command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
+        command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        
+        command_list->DrawInstanced(3, 1, 0, 0);
     }
 }

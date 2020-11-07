@@ -2,7 +2,6 @@
 
 #include "window.hpp"
 #include "d3dx12.h"
-#include "render/simple.hpp"
 #include "scene/scene.hpp"
 #include "ResourceUploadBatch.h"
 namespace feng
@@ -37,6 +36,18 @@ namespace feng
         pass_constant_buffer_ = std::make_unique<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), 1);
         object_constant_buffer_ = std::make_unique<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), scene.StaticMeshes.size());
 
+
+        std::vector<D3D12_INPUT_ELEMENT_DESC> layout = {
+            {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+            {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
+        pp_input_layout_ = {layout.data(), static_cast<UINT>(layout.size())};
+        // PP Pos And UV
+        Vector2 points[] = {
+            {-1.0f, 3.0f}, {0.0f, -1.0f},  {3.0f, -1.0f}, {2.0f, 1.0f}, {-1.0f, -1.0f}, {0.0f, 1.0f},};
+        pp_vertex_buffer_ = std::make_unique<Buffer>(device_->GetDevice(), uploader, points, 3, sizeof(Vector2) * 2);
+        pp_vertex_buffer_view_ = { pp_vertex_buffer_->GetGPUAddress(), sizeof(Vector2) *6,  sizeof(Vector2) * 2};
+
+
         auto ending_event = uploader.End(device_->GetCommandQueue());
         device_->Signal(0);
         device_->Wait(0);
@@ -49,14 +60,13 @@ namespace feng
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
 
-        simple_.reset(new Simple());
-        simple_->Build(*this);
-
         depth_only_.reset(new DepthOnly());
         depth_only_->Build(*this);
 
         gbuffer_output_.reset(new GBufferOutput());
         gbuffer_output_->Build(*this);
+
+        tone_mapping_ = std::make_unique<ToneMapping>(*this);
     }
 
     void Renderer::Draw(const Scene &scene)
@@ -92,19 +102,13 @@ namespace feng
         auto command_list = GetDevice().BeginCommand(idx, nullptr);
 
         ID3D12DescriptorHeap *heaps[] = {
-            device_->GetSRVHeap().Heap(), device_->GetDSVHeap().Heap(),
-            device_->GetRTVHeap().Heap()};
+            device_->GetSRVHeap().Heap()};
         command_list->SetDescriptorHeaps(1, heaps);
-
-
-
 
         depth_only_->Draw(*this, scene, command_list, idx);
         gbuffer_output_->Draw(*this, scene, command_list, idx);
-        simple_->Draw(*this, scene, command_list, idx);
-
-
-        
+        tone_mapping_->Draw(*this, command_list, idx);
+        // simple_->Draw(*this, scene, command_list, idx);
 
         command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_window_->CurrentBackBuffer(),
                                                                                D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -122,4 +126,5 @@ namespace feng
             CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR}};
         return samplers;
     }
+
 } // namespace feng
