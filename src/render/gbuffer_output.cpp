@@ -19,7 +19,7 @@ namespace feng
 
         CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 1, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-        signature_ = Shader::CreateRootSignature(renderer.GetDevice().GetDevice(), rootSigDesc);
+        TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &signature_));
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
         ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));

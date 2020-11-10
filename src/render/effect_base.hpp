@@ -1,6 +1,6 @@
 #pragma once
-
 #include "dx12/dx12_shader.hpp"
+#include "DirectXHelpers.h"
 namespace feng
 {
     class Renderer;
