@@ -5,12 +5,11 @@
 using namespace feng;
 class Demo : public Application
 {
-    protected:
+protected:
     void OnInit() override
     {
-        Camera* camera = new Camera(
-            Vector3{0, 0, 20}, Vector3{0, 0, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f/720.0f
-        );
+        Camera *camera = new Camera(
+            Vector3{0, 0, 20}, Vector3{0, 180, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f / 720.0f);
         Root->SetCamera(camera);
 
         auto m = AssimpMeshLoader::LoadModel("resources\\models\\cube.fbx");
@@ -19,33 +18,33 @@ class Demo : public Application
             L"resources\\textures\\rusted_iron\\albedo.dds",
             L"resources\\textures\\rusted_iron\\normal.dds",
             L"resources\\textures\\rusted_iron\\roughness.dds",
-            L"resources\\textures\\rusted_iron\\metallic.dds"
-        );
+            L"resources\\textures\\rusted_iron\\metallic.dds");
 
-        StaticMesh* mesh1 = new StaticMesh(
+        Root->AddStaticMesh(new StaticMesh(
             Vector3(0, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
             m[0],
-            material
-        );
-        Root->AddStaticMesh(mesh1);
+            material));
 
-        
-        StaticMesh* mesh2 = new StaticMesh(
+        Root->AddStaticMesh(new StaticMesh(
             Vector3(10, 0, 0),
             Vector3(0, 0, 0),
             Vector3::One,
             m[0],
-            material
-        );
-
-        Root->AddStaticMesh(mesh2);
+            material));
+        
+        Root->AddStaticMesh(new StaticMesh(
+            Vector3(10, 0, 100),
+            Vector3(0, 0, 0),
+            Vector3(1.5, 1.5, 1.5),
+            m[0],
+            material));
     }
 
     virtual void OnMouseWheel(short value) override
     {
-        auto& camera = Root->Camera;
+        auto &camera = Root->Camera;
         camera->SetPosition(camera->GetPosition() + camera->MatrixWorld.Forward() * (value / 100.0f));
     }
 
@@ -55,7 +54,7 @@ class Demo : public Application
         static int last_y = y;
         if ((param & MK_RBUTTON) != 0)
         {
-            auto& camera = Root->Camera;
+            auto &camera = Root->Camera;
             float dx = (x - last_x) / 10.0f;
             float dy = (y - last_y) / 10.0f;
             Vector3 rotation = camera->GetRotation();

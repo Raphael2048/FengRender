@@ -33,7 +33,7 @@ namespace feng
             return position_;
         }
 
-        Node &SetScale(const Vector3 &s)
+        virtual Node &SetScale(const Vector3 &s)
         {
             scale_ = s;
             dirty_ = true;
@@ -55,6 +55,18 @@ namespace feng
             return false;
         }
 
+        const Box& GetBoundingBox()
+        {
+            if(box_dirty_)
+            {
+                box_dirty_ = false;
+                RefreshBoundingBox();
+            }
+            return box_;
+        }
+
+        virtual void RefreshBoundingBox() {}
+
         virtual void Update([[maybe_unused]]float deltatime) { }
 
         Matrix MatrixWorld;
@@ -63,11 +75,17 @@ namespace feng
 
 
         Vector3 position_ = {0, 0, 0};
+        // Pitch, Yaw, Roll 
+        // order: yaw->pitch->roll / Y->X->Z) 
         Vector3 rotation_ = {0, 0, 0};
-        // Roll, Pitch, Yaw
         Vector3 scale_ = {1, 1, 1};
-        Matrix transform_;
-        bool dirty_ = true;
-        uint8_t cb_dirty_ = BACK_BUFFER_SIZE;
+
+        Box box_;
+        // for transform
+        bool dirty_ : 1 = true;
+        // for bounding box
+        bool box_dirty_ : 1 = true;
+        // for constant buffer
+        uint8_t cb_dirty_ : 3 = BACK_BUFFER_SIZE;
     };
 } // namespace feng

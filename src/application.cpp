@@ -17,7 +17,13 @@ namespace feng
 
     void Application::Init()
     {
+        // add camera, lights, static_meshes etc.
         OnInit();
+
+        // build octree needed
+        Root->Init();
+
+        // Init renderer resources
         renderer_->Init(*Root);
 
         window_->SetRenderLoop([&](){

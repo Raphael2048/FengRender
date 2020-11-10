@@ -93,17 +93,20 @@ namespace feng
         for (auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
             auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
-            StaticMesh *static_mesh = it->get();
+            if (scene.StaticMeshesVisibity[dis])
+            {
+                StaticMesh *static_mesh = it->get();
 
-            command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
-            command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
-            command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
+                command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
+                command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
+                command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
 
-            command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(static_mesh->material_->first_index_));
+                command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(static_mesh->material_->first_index_));
 
-            command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
+                command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
+            }
         }
     }
 } // namespace feng

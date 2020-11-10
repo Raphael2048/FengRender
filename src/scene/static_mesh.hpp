@@ -23,6 +23,8 @@ namespace feng
         ComPtr<ID3DBlob> index_buffer_cpu_;
         std::unique_ptr<Buffer> vertex_buffer_;
         std::unique_ptr<Buffer> index_buffer_;
+        Vector3 min_;
+        Vector3 max_;
         UINT vertex_count_;
         UINT index_count_;
         bool inited_ = false;
@@ -39,6 +41,8 @@ namespace feng
         D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();
 
         virtual void Update([[maybe_unused]]float deltatime) override;
+        virtual void RefreshBoundingBox() override;
+
         static D3D12_INPUT_LAYOUT_DESC InputLayout();
 
     public:

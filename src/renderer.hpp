@@ -38,8 +38,7 @@ namespace feng
 
         RenderWindow& GetRenderWindow() { return *render_window_; }
         void Init(const Scene& scene);
-        void InitPPAbout();
-        void Draw(const Scene& scene);
+        void Draw(Scene& scene);
 
         std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2>& GetStaticSamplers();
 

@@ -6,6 +6,15 @@ namespace feng
 
     Mesh::Mesh(void *vertex_data, UINT vertex_count, void *index_data, UINT index_count):vertex_count_(vertex_count), index_count_(index_count)
     {
+
+        Vertex* pointer = (Vertex*) vertex_data;
+        min_ = max_ = pointer->pos;
+        for (UINT i = 1; i < vertex_count; i++)
+        {
+            min_ = Vector3::Min(min_, (pointer + i)->pos);
+            max_ = Vector3::Max(max_, (pointer + i)->pos);
+        }
+
         TRY(D3DCreateBlob(sizeof(Vertex) * vertex_count_, &vertex_buffer_cpu_));
         CopyMemory(vertex_buffer_cpu_->GetBufferPointer(), vertex_data, sizeof(Vertex) * vertex_count_);
 
@@ -77,6 +86,15 @@ namespace feng
             MatrixInvWorld = MatrixWorld.Invert();
 
             cb_dirty_ = BACK_BUFFER_SIZE;
+            box_dirty_ = true;
         };
+    }
+
+    void StaticMesh::RefreshBoundingBox()
+    {
+        Vector3 center = (mesh_->max_ + mesh_->min_) * 0.5f;
+        Vector3 extent = (mesh_->max_ - mesh_->min_) * 0.5f;
+        Box origin_box = Box(center, extent);
+        box_ = origin_box.Transform(MatrixWorld);
     }
 } // namespace feng

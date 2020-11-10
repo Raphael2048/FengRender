@@ -43,8 +43,6 @@ namespace feng
         {
             aiMesh* mesh = scene->mMeshes[i];
 			Vertex* vertex_array = (Vertex*)std::malloc(sizeof(Vertex) * mesh->mNumVertices);
-			//std::vector<Vertex> vertex_array;
-			//vertex_array.resize(mesh->mNumVertices);
 			for(unsigned int j = 0; j < mesh->mNumVertices; j++)
 			{
 				CV3(vertex_array[j].pos, mesh->mVertices[j]);
