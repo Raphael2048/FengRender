@@ -84,18 +84,28 @@ namespace feng
 
         scene.StaticMeshesVisibity.assign(scene.StaticMeshesVisibity.size(), false);
         const Box& CameraBoundingBox = scene.Camera->GetBoundingBox();
+        const DirectX::BoundingFrustum& CameraFrustum = scene.Camera->GetBoundingFrustrum();
+
         for (Octree<Scene::StaticMeshProxy>::NodeIterator NodeIt(*(scene.StaticMeshesOctree)); NodeIt.HasPendingNodes(); NodeIt.Advance())
         {
             auto &n = NodeIt.GetCurrentNode();
             auto &context = NodeIt.GetCurrentContext();
             for (const auto &ele : n.GetElements())
             {
-                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox))
+                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox) && CameraFrustum.Intersects(ele.pointer->GetBoundingOrientedBox()))
                 {
                     scene.StaticMeshesVisibity[ele.id] = true;
                 }
             }
-            
+
+            auto intersected = context.GetIntersectingChildren(CameraBoundingBox);
+            for (OctreeChildNodeRef childRef; !childRef.null; childRef.Advance())
+            {
+                if (intersected.Contains(childRef) && n.HasChild(childRef))
+                {
+                    NodeIt.PushChild(childRef);
+                }
+            }
         }
 
         for (auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
@@ -123,7 +133,7 @@ namespace feng
 
         device_->EndCommand();
         render_window_->Swap();
-        // IDX + 1
+        // IDX + 1, Next Frame
         device_->Signal(render_window_->CurrentFrameIdx());
     }
 

@@ -48,7 +48,7 @@ namespace feng
             StaticMesh* pointer;
             uint32_t id;
             static const int MaxNodeDepth = 5;
-            static const int MaxElementsPerLeaf = 10;
+            static const int MaxElementsPerLeaf = 5;
             Box GetBoundingBox() const { return pointer->GetBoundingBox(); }
         };
         std::unique_ptr<Octree<StaticMeshProxy>> StaticMeshesOctree;

@@ -12,9 +12,13 @@ namespace feng
         virtual void Update(float delta) override;
         virtual Node &SetScale(const Vector3 &s) override;
         virtual void RefreshBoundingBox() override;
+        const DirectX::BoundingFrustum& GetBoundingFrustrum();
+
         Matrix MatrixProj;
         Matrix MatrixInvProj;
     private:
+
+        DirectX::BoundingFrustum frustum_;
         float near_;
         float far_;
         float fov_;

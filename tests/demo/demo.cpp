@@ -33,13 +33,22 @@ protected:
             Vector3::One,
             m[0],
             material));
-        
-        Root->AddStaticMesh(new StaticMesh(
-            Vector3(10, 0, 100),
-            Vector3(0, 0, 0),
-            Vector3(1.5, 1.5, 1.5),
-            m[0],
-            material));
+
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                for (int k = 0; k < 5; k++)
+                {
+                    Root->AddStaticMesh(new StaticMesh(
+                        Vector3(i * 20, j * 20, k *20),
+                        Vector3(0, 0, 0),
+                        Vector3(1.5, 1.5, 1.5),
+                        m[0],
+                        material));
+                }
+            }
+        }
     }
 
     virtual void OnMouseWheel(short value) override

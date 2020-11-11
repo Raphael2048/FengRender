@@ -3,18 +3,7 @@
 
 namespace feng
 {
-
-    class Light : public Node
-    {
-    public:
-        Light(const Vector3& position, const Color color):
-            Node(position, Vector3::Zero, Vector3::One), color_(color) {}
-    private:
-        Color color_;
-
-    };
-
-    class DirectionalLight : public Light
+    class DirectionalLight : public Node
     {
     public:
         // HDR linear color, unit : (W/m^2) or (lux)
@@ -22,13 +11,15 @@ namespace feng
 
         virtual void Update(float time) override;
 
-        DirectionalLight& SetDirection(const Vector3& direction)
-        {
-            direction_ = direction;
-            dirty_ = true;
-            return *this;
-        } 
+        DirectionalLight& SetDirection(const Vector3& direction);
+
+        //平行光方向指向负Z轴, 和摄影机一样
+        virtual Node& SetScale([[maybe_unused]] const Vector3& scale) override { return *this; }
+        virtual Node& SetPosition([[maybe_unused]]const Vector3& pos) override { return *this; }
     private:
         Vector3 direction_;
+        Color color_;
     };
+
+    
 }

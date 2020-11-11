@@ -42,11 +42,13 @@ namespace feng
 
         virtual void Update([[maybe_unused]]float deltatime) override;
         virtual void RefreshBoundingBox() override;
+        const DirectX::BoundingOrientedBox& GetBoundingOrientedBox();
 
         static D3D12_INPUT_LAYOUT_DESC InputLayout();
 
     public:
         std::shared_ptr<Mesh> mesh_;
         std::shared_ptr<StaticMaterial> material_;
+        DirectX::BoundingOrientedBox obb_;
     };
 } // namespace feng

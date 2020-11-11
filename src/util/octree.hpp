@@ -155,6 +155,7 @@ namespace feng
             result.bPositiveX = MaxP.x >= Bounds.Center.x - ChildExtent;
             result.bPositiveY = MaxP.y >= Bounds.Center.y - ChildExtent;
             result.bPositiveZ = MaxP.z >= Bounds.Center.z - ChildExtent;
+            return result;
         }
     };
 
@@ -277,7 +278,7 @@ namespace feng
 
                 if (isLeaf)
                 {
-                    if (n.Elements.size() > T::MaxElementsPerLeaf && context.Bounds.Extents.x > MinLeafExtent)
+                    if (n.Elements.size() + 1 > T::MaxElementsPerLeaf && context.Bounds.Extents.x > MinLeafExtent)
                     {
                         ElementArrayType Children = std::move(n.Elements);
                         n.InclusiveNumElements = 0;

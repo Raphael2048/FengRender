@@ -10,25 +10,25 @@ namespace feng
     public:
         Node(const Vector3& position, const Vector3& rotation, const Vector3& scale) :
             position_(position), rotation_(rotation), scale_(scale){}
-        Node &SetRotation(const Vector3 &r)
+        virtual Node &SetRotation(const Vector3 &r)
         {
             rotation_ = r;
             dirty_ = true;
             return *this;
         }
-        Vector3 GetRotation() const
+        const Vector3& GetRotation() const
         {
             return rotation_;
         }
 
-        Node &SetPosition(const Vector3 &p)
+        virtual Node &SetPosition(const Vector3 &p)
         {
             position_ = p;
             dirty_ = true;
             return *this;
         }
 
-        Vector3 GetPosition() const
+        const Vector3& GetPosition() const
         {
             return position_;
         }
@@ -40,7 +40,7 @@ namespace feng
             return *this;
         }
 
-        Vector3 GetScale() const
+        const Vector3& GetScale() const
         {
             return scale_;
         }

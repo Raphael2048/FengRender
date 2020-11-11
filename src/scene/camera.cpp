@@ -14,6 +14,7 @@ namespace feng
         if (dirty_)
         {
             dirty_ = false;
+            // 默认情况下看向负Z轴
             MatrixWorld = Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.y),
                                                          DirectX::XMConvertToRadians(rotation_.x), DirectX::XMConvertToRadians(rotation_.z));
             MatrixWorld *= Matrix::CreateTranslation(position_);
@@ -28,14 +29,28 @@ namespace feng
         }
     }
 
+    const DirectX::BoundingFrustum &Camera::GetBoundingFrustrum()
+    {
+        if (box_dirty_)
+        {
+            box_dirty_ = false;
+            RefreshBoundingBox();
+        }
+        return frustum_;
+    }
+
     void Camera::RefreshBoundingBox()
     {
-        float width = tan(DirectX::XMConvertToRadians(fov_)) * far_;
-        float height = width / aspect_;
+        float half_width = tan(DirectX::XMConvertToRadians(fov_)) * far_ * 0.5f;
+        float half_height = half_width / aspect_ * 0.5f;
         Box origin = Box(
             Vector3(0, 0, -far_ * 0.5f),
-            Vector3(width * 0.5f, height * 0.5f, far_ * 0.5f));
+            Vector3(half_width, half_height, far_ * 0.5f));
         box_ = origin.Transform(MatrixWorld);
+
+        DirectX::BoundingFrustum::CreateFromMatrix(frustum_, MatrixProj);
+        frustum_.Origin = position_;
+        XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionRotationMatrix(MatrixWorld));
     }
 
     Node &Camera::SetScale([[maybe_unused]] const Vector3 &s)

@@ -42,4 +42,12 @@ namespace feng
         }
     };
 
+    struct Frustum : public DirectX::BoundingFrustum
+    {
+        bool Intersects(const Box& box) const
+        {
+            return DirectX::BoundingFrustum::Intersects(box);
+        }
+    };
+
 } // namespace feng

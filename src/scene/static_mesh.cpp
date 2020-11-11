@@ -4,10 +4,10 @@
 namespace feng
 {
 
-    Mesh::Mesh(void *vertex_data, UINT vertex_count, void *index_data, UINT index_count):vertex_count_(vertex_count), index_count_(index_count)
+    Mesh::Mesh(void *vertex_data, UINT vertex_count, void *index_data, UINT index_count) : vertex_count_(vertex_count), index_count_(index_count)
     {
 
-        Vertex* pointer = (Vertex*) vertex_data;
+        Vertex *pointer = (Vertex *)vertex_data;
         min_ = max_ = pointer->pos;
         for (UINT i = 1; i < vertex_count; i++)
         {
@@ -22,12 +22,12 @@ namespace feng
         CopyMemory(index_buffer_cpu_->GetBufferPointer(), index_data, sizeof(uint32_t) * index_count_);
     }
 
-    void Mesh::Init(const Device& device, DirectX::ResourceUploadBatch& uploader)
+    void Mesh::Init(const Device &device, DirectX::ResourceUploadBatch &uploader)
     {
         if (!inited_)
         {
-            vertex_buffer_.reset(new Buffer(device.GetDevice(), uploader,  vertex_buffer_cpu_->GetBufferPointer(), vertex_count_, sizeof(Vertex)));
-            index_buffer_.reset(new Buffer(device.GetDevice(),uploader,  index_buffer_cpu_->GetBufferPointer(), index_count_, sizeof(uint32_t)));
+            vertex_buffer_.reset(new Buffer(device.GetDevice(), uploader, vertex_buffer_cpu_->GetBufferPointer(), vertex_count_, sizeof(Vertex)));
+            index_buffer_.reset(new Buffer(device.GetDevice(), uploader, index_buffer_cpu_->GetBufferPointer(), index_count_, sizeof(uint32_t)));
             inited_ = true;
         }
     }
@@ -43,12 +43,12 @@ namespace feng
         return {layout.data(), (UINT)layout.size()};
     }
 
-    StaticMesh::StaticMesh(const Vector3 &position, const Vector3 &rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh, std::shared_ptr<StaticMaterial> material) 
-    : Node(position, rotation, scale), mesh_(mesh), material_(material)
+    StaticMesh::StaticMesh(const Vector3 &position, const Vector3 &rotation, const Vector3 scale, std::shared_ptr<Mesh> mesh, std::shared_ptr<StaticMaterial> material)
+        : Node(position, rotation, scale), mesh_(mesh), material_(material)
     {
     }
 
-    void StaticMesh::Init(Device& device, DirectX::ResourceUploadBatch& uploader)
+    void StaticMesh::Init(Device &device, DirectX::ResourceUploadBatch &uploader)
     {
         mesh_->Init(device, uploader);
         material_->Init(device, uploader);
@@ -96,5 +96,23 @@ namespace feng
         Vector3 extent = (mesh_->max_ - mesh_->min_) * 0.5f;
         Box origin_box = Box(center, extent);
         box_ = origin_box.Transform(MatrixWorld);
+
+        obb_.Center = center + position_;
+        obb_.Extents = extent * scale_;
+        using namespace DirectX;
+        XMFLOAT4 f(XMConvertToRadians(rotation_.z),
+           XMConvertToRadians(rotation_.x), XMConvertToRadians(rotation_.y), 0.0f);
+        FXMVECTOR v = XMLoadFloat4(&f);
+        DirectX::XMStoreFloat4(&obb_.Orientation, DirectX::XMQuaternionRotationRollPitchYawFromVector(v));
+    }
+
+    const DirectX::BoundingOrientedBox &StaticMesh::GetBoundingOrientedBox()
+    {
+        if (box_dirty_)
+        {
+            box_dirty_ = false;
+            RefreshBoundingBox();
+        }
+        return obb_;
     }
 } // namespace feng
