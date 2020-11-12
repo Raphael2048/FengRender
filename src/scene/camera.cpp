@@ -50,7 +50,8 @@ namespace feng
 
         DirectX::BoundingFrustum::CreateFromMatrix(frustum_, MatrixProj);
         frustum_.Origin = position_;
-        XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionRotationMatrix(MatrixWorld));
+        CalQuaternion(frustum_.Orientation);
+        // XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionRotationMatrix(MatrixWorld));
     }
 
     Node &Camera::SetScale([[maybe_unused]] const Vector3 &s)

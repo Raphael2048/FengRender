@@ -5,7 +5,7 @@
 #include "dx12/dx12_defines.hpp"
 namespace feng
 {
-    class Node
+    class Node : Uncopyable
     {
     public:
         Node(const Vector3& position, const Vector3& rotation, const Vector3& scale) :
@@ -63,6 +63,14 @@ namespace feng
                 RefreshBoundingBox();
             }
             return box_;
+        }
+
+        void CalQuaternion(DirectX::XMFLOAT4& out)
+        {
+            using namespace DirectX;
+            XMVECTOR v = XMLoadFloat3(&rotation_);
+            v = XMVectorScale(v, XM_PI / 180.0f);
+            XMStoreFloat4( &out, XMQuaternionRotationRollPitchYawFromVector(v));
         }
 
         virtual void RefreshBoundingBox() {}

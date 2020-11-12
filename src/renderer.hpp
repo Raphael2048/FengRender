@@ -9,6 +9,7 @@
 #include "render/depth_only.hpp"
 #include "render/gbuffer_output.hpp"
 #include "render/tone_mapping.hpp"
+#include "render/directional_light_effect.hpp"
 #include <array>
 namespace feng
 {
@@ -20,7 +21,6 @@ namespace feng
         Matrix InvProj;
         Matrix ViewProj;
         Matrix InvViewProj;
-        Vector3 EyePos;
     };
 
     struct ObjectConstantBuffer
@@ -65,10 +65,11 @@ namespace feng
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;
 
-
         std::unique_ptr<DepthOnly> depth_only_;
         std::unique_ptr<GBufferOutput> gbuffer_output_;
         std::unique_ptr<ToneMapping> tone_mapping_;
+
+        std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
     };
 
 } // namespace feng

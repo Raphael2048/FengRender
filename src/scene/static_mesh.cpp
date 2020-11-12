@@ -99,11 +99,8 @@ namespace feng
 
         obb_.Center = center + position_;
         obb_.Extents = extent * scale_;
-        using namespace DirectX;
-        XMFLOAT4 f(XMConvertToRadians(rotation_.z),
-           XMConvertToRadians(rotation_.x), XMConvertToRadians(rotation_.y), 0.0f);
-        FXMVECTOR v = XMLoadFloat4(&f);
-        DirectX::XMStoreFloat4(&obb_.Orientation, DirectX::XMQuaternionRotationRollPitchYawFromVector(v));
+
+        CalQuaternion(obb_.Orientation);
     }
 
     const DirectX::BoundingOrientedBox &StaticMesh::GetBoundingOrientedBox()

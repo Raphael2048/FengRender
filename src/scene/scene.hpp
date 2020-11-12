@@ -2,6 +2,7 @@
 
 #include "scene/camera.hpp"
 #include "scene/static_mesh.hpp"
+#include "scene/light.hpp"
 #include "util/octree.hpp"
 namespace feng
 {
@@ -10,15 +11,24 @@ namespace feng
     public:
 
         void SetCamera(Camera *camera) { Camera.reset(camera); }
+        void SetDirectionalLight(DirectionalLight *light) { DirectionalLight.reset(light); }
         void AddStaticMesh(StaticMesh *mesh) { StaticMeshes.emplace_back(mesh); }
         void Init()
         {
             // 先算出BoundingBox
             Update(0);
+            Box bounds = StaticMeshes[0]->GetBoundingBox();
+            for (auto& mesh : StaticMeshes)
+            {
+                bounds = bounds.Combine(mesh->GetBoundingBox());
+            }
+
             StaticMeshesOctree.reset(
                 new Octree<StaticMeshProxy>(
-                    Vector3(0, 0, 0),
-                    1000.0f
+                    bounds.Center,
+                    (std::max)({
+                        bounds.Extents.x, bounds.Extents.y, bounds.Extents.z
+                    })
                 )
             );
             StaticMeshesVisibity.resize(StaticMeshes.size());
@@ -34,6 +44,8 @@ namespace feng
         {
             Camera->Update(delta);
 
+            if (DirectionalLight) DirectionalLight->Update(delta);
+
             for (auto &node : StaticMeshes)
             {
                 node->Update(delta);
@@ -41,6 +53,9 @@ namespace feng
         }
 
         std::unique_ptr<Camera> Camera;
+
+        std::unique_ptr<DirectionalLight> DirectionalLight;
+
         std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;
 
         struct StaticMeshProxy

@@ -57,8 +57,7 @@ namespace feng
         command_list->SetGraphicsRootSignature(signature_.Get());
 
         command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(renderer.t_gbuffer_base_color_->GetSRVHeapIndex()));
-
-
+        
         command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
         command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         

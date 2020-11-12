@@ -2,7 +2,8 @@
 
 namespace feng
 {
-    DirectionalLight::DirectionalLight(const Vector3 &position, const Vector3 &direction, const Color &color) : Node(position, Vector3::Zero, Vector3::One), direction_(direction)
+    DirectionalLight::DirectionalLight(const Vector3 &rotation, const Color &color) 
+        : Node(Vector3::Zero, rotation, Vector3::One), color_(color)
     {
     }
 

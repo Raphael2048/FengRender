@@ -8,9 +8,11 @@ class Demo : public Application
 protected:
     void OnInit() override
     {
-        Camera *camera = new Camera(
-            Vector3{0, 0, 20}, Vector3{0, 180, 0}, 1.0f, 1000.0f, 60.0f, 1280.0f / 720.0f);
-        Root->SetCamera(camera);
+        Root->SetCamera(new Camera(Vector3{10, 10, 20}, Vector3{0, 0, 0}, 1.0f, 100.0f, 60.0f, 1280.0f / 720.0f));
+
+        Root->SetDirectionalLight(new DirectionalLight(
+            Vector3(0, 0, 0), Color(1, 1, 1)
+        ));
 
         auto m = AssimpMeshLoader::LoadModel("resources\\models\\cube.fbx");
 
@@ -21,34 +23,27 @@ protected:
             L"resources\\textures\\rusted_iron\\metallic.dds");
 
         Root->AddStaticMesh(new StaticMesh(
-            Vector3(0, 0, 0),
-            Vector3(0, 0, 0),
-            Vector3::One,
-            m[0],
-            material));
-
-        Root->AddStaticMesh(new StaticMesh(
-            Vector3(10, 0, 0),
-            Vector3(0, 0, 0),
-            Vector3::One,
-            m[0],
-            material));
-
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                for (int k = 0; k < 5; k++)
-                {
-                    Root->AddStaticMesh(new StaticMesh(
-                        Vector3(i * 20, j * 20, k *20),
-                        Vector3(0, 0, 0),
+                        Vector3(20, 20, 120),
+                        Vector3(20, 10, 0),
                         Vector3(1.5, 1.5, 1.5),
                         m[0],
                         material));
-                }
-            }
-        }
+
+         for (int i = 0; i < 5; i++)
+         {
+             for (int j = 0; j < 5; j++)
+             {
+                 for (int k = 0; k < 5; k++)
+                 {
+                     Root->AddStaticMesh(new StaticMesh(
+                         Vector3(i * 20, j * 20, k *20),
+                         Vector3(20, 10, 0),
+                         Vector3(1.5, 1.5, 1.5),
+                         m[0],
+                         material));
+                 }
+             }
+         }
     }
 
     virtual void OnMouseWheel(short value) override

@@ -49,7 +49,7 @@ namespace feng
         ending_event.wait();
 
         // 这里GPU地址是连续的, 直接用range表示
-        t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
         t_gbuffer_base_color_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
@@ -61,6 +61,11 @@ namespace feng
         gbuffer_output_->Build(*this);
 
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
+
+        if (scene.DirectionalLight)
+        {
+            directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, GetDevice(), scene));
+        }
     }
 
     void Renderer::Draw(Scene &scene)
@@ -83,8 +88,8 @@ namespace feng
         }
 
         scene.StaticMeshesVisibity.assign(scene.StaticMeshesVisibity.size(), false);
-        const Box& CameraBoundingBox = scene.Camera->GetBoundingBox();
-        const DirectX::BoundingFrustum& CameraFrustum = scene.Camera->GetBoundingFrustrum();
+        const Box &CameraBoundingBox = scene.Camera->GetBoundingBox();
+        const DirectX::BoundingFrustum &CameraFrustum = scene.Camera->GetBoundingFrustrum();
 
         for (Octree<Scene::StaticMeshProxy>::NodeIterator NodeIt(*(scene.StaticMeshesOctree)); NodeIt.HasPendingNodes(); NodeIt.Advance())
         {
@@ -124,8 +129,17 @@ namespace feng
         ID3D12DescriptorHeap *heaps[] = {device_->GetSRVHeap().Heap()};
         command_list->SetDescriptorHeaps(1, heaps);
 
+        // Depth Prepass
         depth_only_->Draw(*this, scene, command_list, idx);
+        // GBuffer Output
         gbuffer_output_->Draw(*this, scene, command_list, idx);
+
+        if (scene.DirectionalLight)
+        {
+            directional_light_effect_->Draw(*this, scene, command_list, idx);
+        }
+
+        // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);
 
         command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_window_->CurrentBackBuffer(),

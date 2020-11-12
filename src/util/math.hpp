@@ -22,7 +22,7 @@ namespace feng
         Box &operator=(Box &&) = default;
         Box(Vector3 center, Vector3 extent) : BoundingBox(center, extent) {}
 
-        Box Transform(const Matrix& m)
+        Box Transform(const Matrix& m) const
         {
             Box out;
             DirectX::BoundingBox::Transform(out, m);

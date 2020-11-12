@@ -84,7 +84,7 @@ namespace feng
     class OctreeNodeContext
     {
     public:
-        // 松散边界extent*2, 方便判断位置
+        // tight bounds, real loose bounds is twice size
         Box Bounds;
 
         float ChildExtent;
@@ -253,6 +253,11 @@ namespace feng
         void AddElement(const T &element)
         {
             AddElementToNode(element, RootNode, RootNodeContext);
+        }
+
+        Box GetRootBounds() const
+        {
+            return RootNodeContext.Bounds;
         }
 
     private:
