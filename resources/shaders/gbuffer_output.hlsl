@@ -19,6 +19,7 @@ cbuffer pass_constant : register(b1)
     float4x4 inv_proj;
     float4x4 view_proj;
     float4x4 inv_view_proj;
+    float3 camera_pos;
 };
 
 struct VertexIn

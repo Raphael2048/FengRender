@@ -11,7 +11,7 @@ protected:
         Root->SetCamera(new Camera(Vector3{10, 10, 20}, Vector3{0, 0, 0}, 1.0f, 100.0f, 60.0f, 1280.0f / 720.0f));
 
         Root->SetDirectionalLight(new DirectionalLight(
-            Vector3(0, 0, 0), Color(1, 1, 1)
+            Vector3(0, 90, 0), Color(2, 2, 2)
         ));
 
         auto m = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");
@@ -22,11 +22,17 @@ protected:
             L"resources\\textures\\rusted_iron\\roughness.dds",
             L"resources\\textures\\rusted_iron\\metallic.dds");
 
+        auto material_rock = std::make_shared<StaticMaterial>(
+            L"resources\\textures\\rock\\albedo.dds",
+            L"resources\\textures\\rock\\normal.dds",
+            L"resources\\textures\\rock\\roughness.dds",
+            L"resources\\textures\\rock\\metallic.dds");
+
         Root->AddStaticMesh(new StaticMesh(
-                        Vector3(20, 20, 120),
-                        Vector3(20, 10, 0),
-                        Vector3(15, 15, 15),
-                        m[0],
+                         Vector3(20, 20, 20),
+                         Vector3(20, 10, 0),
+                         Vector3(2, 2, 2),
+                         m[0],
                         material));
 
          for (int i = 0; i < 5; i++)
@@ -38,9 +44,9 @@ protected:
                      Root->AddStaticMesh(new StaticMesh(
                          Vector3(i * 20, j * 20, k *20),
                          Vector3(20, 10, 0),
-                         Vector3(5, 5, 5),
+                         Vector3(2, 2, 2),
                          m[0],
-                         material));
+                        (i + j + k) % 2 == 0 ? material_rock : material));
                  }
              }
          }

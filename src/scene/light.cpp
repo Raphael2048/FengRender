@@ -11,7 +11,8 @@ namespace feng
     {
         if (dirty_)
         {
-            MatrixWorld *= Matrix::CreateFromYawPitchRoll(
+            dirty_ = false;
+            MatrixWorld = Matrix::CreateFromYawPitchRoll(
                 DirectX::XMConvertToRadians(rotation_.y),
                 DirectX::XMConvertToRadians(rotation_.x), 0.0f);
 

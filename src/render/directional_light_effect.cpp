@@ -82,8 +82,8 @@ namespace feng
         float far2 = camera.far_;
 
         // 渐变切换
-        far0 = (far0 - near0) * 0.1f + far0;
-        near2 = near2 - (far2 - near2) * 0.1f;
+        // far0 = (far0 - near0) * 0.1f + far0;
+        // near2 = near2 - (far2 - near2) * 0.1f;
 
         float half_width = tan(DirectX::XMConvertToRadians(camera.fov_)) * camera.far_ * 0.5f;
         float half_height = half_width / camera.aspect_ * 0.5f;
