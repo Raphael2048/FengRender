@@ -21,6 +21,7 @@ namespace feng
         Matrix InvProj;
         Matrix ViewProj;
         Matrix InvViewProj;
+        Vector3 CameraPos;
     };
 
     struct ObjectConstantBuffer
@@ -36,32 +37,30 @@ namespace feng
         Renderer(const Window &window);
         Device &GetDevice() { return *device_; }
 
-        RenderWindow& GetRenderWindow() { return *render_window_; }
-        void Init(const Scene& scene);
-        void Draw(Scene& scene);
+        RenderWindow &GetRenderWindow() { return *render_window_; }
+        void Init(const Scene &scene);
+        void Draw(Scene &scene);
 
-        std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2>& GetStaticSamplers();
+        std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> &GetStaticSamplers();
 
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> pass_constant_buffer_;
         std::unique_ptr<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>> object_constant_buffer_;
         UINT width_, height_;
 
-
         // depth buffer
-        std::unique_ptr<DynamicTexture> t_depth_, t_gbuffer_base_color_, t_gbuffer_normal, t_gbuffer_roughness_metallic_;
+        std::unique_ptr<DynamicTexture> t_depth_, t_gbuffer_base_color_, t_gbuffer_normal,
+            t_gbuffer_roughness_metallic_, t_color_output_;
 
         D3D12_VIEWPORT viewport_;
         D3D12_RECT scissor_rect_;
-
 
         // PostProcessing InputLayout
         D3D12_INPUT_LAYOUT_DESC pp_input_layout_;
         // PostProcessing VertexData
         std::unique_ptr<Buffer> pp_vertex_buffer_;
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
+
     private:
-
-
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;
 

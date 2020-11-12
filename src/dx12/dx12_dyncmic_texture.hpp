@@ -14,7 +14,14 @@ namespace feng
         int GetSRVHeapIndex() {return srv_heap_index_; }
         int GetRTVHeapIndex() {return rtv_heap_index_; }
         int GetDSVHeapIndex() {return dsv_heap_index_; }
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPUSRV();
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTV();
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDSV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPURTV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDSV();
     private:
+        Device* device_;
         D3D12_RESOURCE_STATES current_state_;
         ComPtr<ID3D12Resource> buffer_;
         int srv_heap_index_ = -10000;

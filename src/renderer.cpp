@@ -49,10 +49,13 @@ namespace feng
         ending_event.wait();
 
         // 这里GPU地址是连续的, 直接用range表示
-        t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
         t_gbuffer_base_color_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
+        t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
+        
+        t_color_output_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        
 
         depth_only_.reset(new DepthOnly());
         depth_only_->Build(*this);
@@ -64,7 +67,7 @@ namespace feng
 
         if (scene.DirectionalLight)
         {
-            directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, GetDevice(), scene));
+            directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
         }
     }
 
@@ -83,7 +86,7 @@ namespace feng
             constant.InvProj = camera.MatrixInvProj.Transpose();
             constant.ViewProj = constant.Proj * constant.View;
             constant.InvViewProj = constant.InvView * constant.InvProj;
-
+            constant.CameraPos = camera.GetPosition();
             pass_constant_buffer_->operator[](idx).Write(0, constant);
         }
 

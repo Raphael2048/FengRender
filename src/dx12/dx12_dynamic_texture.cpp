@@ -4,6 +4,7 @@
 namespace feng
 {
     DynamicTexture::DynamicTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
+    :device_(&device)
     {
         bool is_depth = write_format == DXGI_FORMAT_D32_FLOAT || write_format == DXGI_FORMAT_D24_UNORM_S8_UINT ||
                         write_format == DXGI_FORMAT_D16_UNORM || write_format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
@@ -99,5 +100,31 @@ namespace feng
         command->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
             buffer_.Get(), current_state_, state));
         current_state_ = state;
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE DynamicTexture::GetCPUSRV()
+    {
+        return device_->GetSRVHeap().GetCpuHandle(srv_heap_index_);
+    }
+    D3D12_CPU_DESCRIPTOR_HANDLE DynamicTexture::GetCPURTV()
+    {
+        return device_->GetRTVHeap().GetCpuHandle(rtv_heap_index_);
+    }
+    D3D12_CPU_DESCRIPTOR_HANDLE DynamicTexture::GetCPUDSV()
+    {
+        return device_->GetDSVHeap().GetCpuHandle(dsv_heap_index_);
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPURTV()
+    {
+        return device_->GetRTVHeap().GetGpuHandle(rtv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUDSV()
+    {
+        return device_->GetDSVHeap().GetGpuHandle(dsv_heap_index_);
     }
 } // namespace feng

@@ -14,7 +14,7 @@ protected:
             Vector3(0, 0, 0), Color(1, 1, 1)
         ));
 
-        auto m = AssimpMeshLoader::LoadModel("resources\\models\\cube.fbx");
+        auto m = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");
 
         auto material = std::make_shared<StaticMaterial>(
             L"resources\\textures\\rusted_iron\\albedo.dds",
@@ -25,7 +25,7 @@ protected:
         Root->AddStaticMesh(new StaticMesh(
                         Vector3(20, 20, 120),
                         Vector3(20, 10, 0),
-                        Vector3(1.5, 1.5, 1.5),
+                        Vector3(15, 15, 15),
                         m[0],
                         material));
 
@@ -38,7 +38,7 @@ protected:
                      Root->AddStaticMesh(new StaticMesh(
                          Vector3(i * 20, j * 20, k *20),
                          Vector3(20, 10, 0),
-                         Vector3(1.5, 1.5, 1.5),
+                         Vector3(5, 5, 5),
                          m[0],
                          material));
                  }

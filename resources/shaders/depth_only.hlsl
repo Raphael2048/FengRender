@@ -1,3 +1,5 @@
+#include "light_common.hlsl"
+
 cbuffer object_constant : register(b0)
 {
     float4x4 world;
