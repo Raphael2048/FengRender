@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "scene/node.hpp"
 
 namespace feng
@@ -22,8 +22,10 @@ namespace feng
 
         DirectX::BoundingFrustum frustum_;
         float near_;
+        // 这里fov是垂直方向的角度, 不是水平方向
         float far_;
         float fov_;
+        // 宽度/高度
         float aspect_;
 
     };

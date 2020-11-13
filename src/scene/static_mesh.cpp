@@ -107,9 +107,12 @@ namespace feng
         Box origin_box = Box(center, extent);
         box_ = origin_box.Transform(MatrixWorld);
 
+        //这里OBB的新的中心位置, 直接借用box_的中心位置
         obb_.Center = center + position_;
         obb_.Extents = extent * scale_;
-
+        // obb_.Center = box_.Center;
+        obb_.Extents = box_.Extents;
+        // obb_.Orientation = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
         CalQuaternion(obb_.Orientation);
     }
 

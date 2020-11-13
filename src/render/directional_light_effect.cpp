@@ -85,8 +85,8 @@ namespace feng
         // far0 = (far0 - near0) * 0.1f + far0;
         // near2 = near2 - (far2 - near2) * 0.1f;
 
-        float half_width = tan(DirectX::XMConvertToRadians(camera.fov_)) * camera.far_ * 0.5f;
-        float half_height = half_width / camera.aspect_ * 0.5f;
+        float half_height = tan(DirectX::XMConvertToRadians(camera.fov_) * 0.5f) * camera.far_;
+        float half_width = half_height * camera.aspect_;
         Box box[3];
         new (box) Box(
             Vector3(0, 0, -(near0 + far0) * 0.5f),

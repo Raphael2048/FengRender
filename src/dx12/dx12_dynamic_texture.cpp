@@ -37,8 +37,9 @@ namespace feng
             optClear.Color[3] = 0.0f;
         }
 
+        auto HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         TRY(device.GetDevice()->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            &HeapProp,
             D3D12_HEAP_FLAG_NONE,
             &texDesc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
@@ -97,8 +98,8 @@ namespace feng
     void DynamicTexture::TransitionState(ID3D12GraphicsCommandList* command, D3D12_RESOURCE_STATES state)
     {
         if(state == current_state_) return;
-        command->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-            buffer_.Get(), current_state_, state));
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
+        command->ResourceBarrier(1, &transition);
         current_state_ = state;
     }
 

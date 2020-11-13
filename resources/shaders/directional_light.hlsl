@@ -62,34 +62,34 @@ float4 PS(VertexOut pin) : SV_Target
     float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), inv_view_proj);
     WorldSpacePos.xyz /= WorldSpacePos.w;
 
-    return WorldSpacePos;
+    // return WorldSpacePos;
 
-    // float3 V = normalize(camera_pos - WorldSpacePos.xyz);
-    // float3 L = normalize(-light_direction);
-    // float3 H = normalize(L + V);
+    float3 V = normalize(camera_pos - WorldSpacePos.xyz);
+    float3 L = normalize(-light_direction);
+    float3 H = normalize(L + V);
 
-    // float NdotH = max(dot(N, H), 0.0);
-    // float NdotV = max(dot(N, V), 0.0);
-    // float NdotL = max(dot(N, L), 0.0);
-    // float HdotV = max(dot(H, V), 0.0);
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float HdotV = max(dot(H, V), 0.0);
 
-    // float3 F0 = float3(0.04f, 0.04f, 0.04f);
-    // F0 = lerp(F0, BaseColor, RoughnessMetallic.y);
+    float3 F0 = float3(0.04f, 0.04f, 0.04f);
+    F0 = lerp(F0, BaseColor, RoughnessMetallic.y);
 
-    // float NDF = DistributionGGX(NdotH, RoughnessMetallic.x);
-    // float G = GeometrySchlickGGX(NdotV, RoughnessMetallic.x) * GeometrySchlickGGX(NdotL, RoughnessMetallic.x);
-    // float3 F = FresnelSchlick(F0, HdotV);
+    float NDF = DistributionGGX(NdotH, RoughnessMetallic.x);
+    float G = GeometrySchlickGGX(NdotV, RoughnessMetallic.x) * GeometrySchlickGGX(NdotL, RoughnessMetallic.x);
+    float3 F = FresnelSchlick(F0, HdotV);
 
-    // float3 nominator = NDF * G * F;
-    // float denominator = 4 * NdotV * NdotL + 0.001;
-    // float3 specular = nominator / denominator;
+    float3 nominator = NDF * G * F;
+    float denominator = 4 * NdotV * NdotL + 0.001;
+    float3 specular = nominator / denominator;
 
-    // float3 kS = F;
-    // float3 kD = float3(1.0, 1.0, 1.0) - kS;
-    // kD *= (1.0 - RoughnessMetallic.y);
+    float3 kS = F;
+    float3 kD = float3(1.0, 1.0, 1.0) - kS;
+    kD *= (1.0 - RoughnessMetallic.y);
 
 
-    // float3 output = (kD * BaseColor / PI + specular) * light_color * NdotL;
+    float3 output = (kD * BaseColor / PI + specular) * light_color * NdotL;
 
-    // return float4(output, 0.0f);
+    return float4(output, 0.0f);
 }

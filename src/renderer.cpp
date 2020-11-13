@@ -100,7 +100,9 @@ namespace feng
             auto &context = NodeIt.GetCurrentContext();
             for (const auto &ele : n.GetElements())
             {
-                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox) && CameraFrustum.Intersects(ele.pointer->GetBoundingOrientedBox()))
+                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox) 
+                    && CameraFrustum.Intersects(ele.pointer->GetBoundingBox())
+                    )
                 {
                     scene.StaticMeshesVisibity[ele.id] = true;
                 }
