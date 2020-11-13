@@ -47,7 +47,7 @@ namespace feng
         psoDesc.RTVFormats[2] = DXGI_FORMAT_R8G8_UNORM;
 
         // Depth
-        psoDesc.DSVFormat = DXGI_FORMAT_D16_UNORM;
+        psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
         psoDesc.SampleDesc.Count = 1;
         psoDesc.SampleDesc.Quality = 0;
         renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
@@ -65,11 +65,9 @@ namespace feng
         renderer.t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
         
         // continus render target handle address
-        command_list->OMSetRenderTargets(
-            3,
-            &renderer.GetDevice().GetRTVHeap().GetCpuHandle(renderer.t_gbuffer_base_color_->GetRTVHeapIndex()),
-            TRUE,
-            &renderer.GetDevice().GetDSVHeap().GetCpuHandle(renderer.t_depth_->GetDSVHeapIndex()));
+        auto base_rtv = renderer.t_gbuffer_base_color_->GetCPURTV();
+        auto depth_dsv = renderer.t_depth_->GetCPUDSV();
+        command_list->OMSetRenderTargets(3, &base_rtv, TRUE, &depth_dsv);
 
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(
@@ -95,17 +93,9 @@ namespace feng
             auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
             if (scene.StaticMeshesVisibity[dis])
             {
-                StaticMesh *static_mesh = it->get();
-
-                command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
-                command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
-                command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
                 command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
-
-                command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(static_mesh->material_->first_index_));
-
-                command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
+                command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(it->get()->material_->first_index_));
+                it->get()->DrawWithCommand(command_list);
             }
         }
     }

@@ -45,9 +45,9 @@ VertexOut VS(VertexIn vin)
     float4x4 MVP = mul(view, proj);
     MVP = mul(world, MVP);
     vout.pos = mul(float4(vin.pos, 1.0f), MVP);
-    float3x3 world_normal = transpose((float3x3)inv_world);
-    vout.normal = mul(vin.normal, world_normal);
-    vout.tangent = mul(vin.tangent, world_normal);
+    float3x3 local2view = transpose((float3x3)inv_world);
+    vout.normal = mul(vin.normal, local2view);
+    vout.tangent = mul(vin.tangent, local2view);
     vout.uv = vin.uv;
     return vout;
 }
@@ -73,7 +73,7 @@ PixelOutput PS(VertexOut pin) : SV_Target
 
     float3x3 TBN = float3x3(T, B, N);
 
-    pout.world_normal.rgb = mul(normalT, TBN);
+    pout.world_normal.rgb = (mul(normalT, TBN) + 1.0) * 0.5;
     pout.world_normal.a = 0.0f;
     pout.roughness_metallic.x = t_roghness.Sample(linear_sampler, pin.uv).r;
     pout.roughness_metallic.y = t_metallic.Sample(linear_sampler, pin.uv).r;

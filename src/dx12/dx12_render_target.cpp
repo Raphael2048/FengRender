@@ -4,11 +4,6 @@
 #include "d3dx12.h"
 namespace feng
 {
-    RenderTarget::RenderTarget(int buffers)
-    {
-        // rt_buffers_.resize(buffers);
-    }
-
     RenderWindow::RenderWindow(Device &device, const Window &window)
     {
         device_ = &device;
@@ -34,7 +29,7 @@ namespace feng
         swap_chain_ = static_cast<IDXGISwapChain4 *>(temp_chain);
         frame_id_ = swap_chain_->GetCurrentBackBufferIndex();
 
-        auto& rtv_heap = device.GetRTVHeap();
+        auto &rtv_heap = device.GetRTVHeap();
 
         rtv_begin_index_ = device_->GetRTVAllocIndex();
         TRY(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&rtv_[0])));
@@ -44,15 +39,6 @@ namespace feng
             TRY(swap_chain_->GetBuffer(i, IID_PPV_ARGS(&rtv_[i])));
             device.GetDevice()->CreateRenderTargetView(rtv_[i].Get(), nullptr, rtv_heap.GetCpuHandle(device.GetRTVAllocIndex()));
         }
-
-        viewport_.TopLeftX = 0;
-        viewport_.TopLeftY = 0;
-        viewport_.Width = static_cast<float>(width_);
-        viewport_.Height = static_cast<float>(height_);
-        viewport_.MinDepth = 0.0f;
-        viewport_.MaxDepth = 1.0f;
-
-        scissor_rect_ = {0, 0, static_cast<LONG>(width_), static_cast<LONG>(height_)};
     }
 
     ID3D12Resource *RenderWindow::CurrentBackBuffer() const
@@ -69,16 +55,5 @@ namespace feng
     {
         swap_chain_->Present(0, 0);
         frame_id_ = (frame_id_ + 1) % BACK_BUFFER_SIZE;
-    }
-
-    void RenderWindow::SetupCommandList(ComPtr<ID3D12GraphicsCommandList> command)
-    {
-        command->RSSetViewports(1, &viewport_);
-        command->RSSetScissorRects(1, &scissor_rect_);
-        command->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-        command->ClearRenderTargetView(CurrentBackBufferView(), Color(0.1, 0.1, 0.1, 1), 0, nullptr);
-        // command->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-        // command->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
-        command->OMSetRenderTargets(1, &CurrentBackBufferView(), FALSE, nullptr);
     }
 } // namespace feng

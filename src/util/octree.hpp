@@ -112,9 +112,9 @@ namespace feng
             return OctreeNodeContext(
                 Box(
                     Vector3(
-                        Bounds.Center.x + ChildExtent * ChildRef.x == 0 ? -1 : 1,
-                        Bounds.Center.y + ChildExtent * ChildRef.y == 0 ? -1 : 1,
-                        Bounds.Center.z + ChildExtent * ChildRef.z == 0 ? -1 : 1),
+                        Bounds.Center.x + ChildExtent * ChildRef.x == 0 ? -1.0f : 1.0f,
+                        Bounds.Center.y + ChildExtent * ChildRef.y == 0 ? -1.0f : 1.0f,
+                        Bounds.Center.z + ChildExtent * ChildRef.z == 0 ? -1.0f : 1.0f),
                     Vector3(
                         ChildExtent,
                         ChildExtent,

@@ -41,7 +41,7 @@ namespace feng
 
         // Only Depth
         psoDesc.NumRenderTargets = 0;
-        psoDesc.DSVFormat = DXGI_FORMAT_D16_UNORM;
+        psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
         psoDesc.SampleDesc.Count = 1;
         psoDesc.SampleDesc.Quality = 0;
         renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
@@ -73,15 +73,9 @@ namespace feng
             auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
             if (scene.StaticMeshesVisibity[dis])
             {
-                StaticMesh* static_mesh = it->get();
-
-                command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
-                command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
                 command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                
                 command_list->SetGraphicsRootConstantBufferView(0, object_buffer_base_address + dis * object_buffer.GetSize());
-
-                command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
+                it->get()->DrawWithCommand(command_list);
             }
         }
     }

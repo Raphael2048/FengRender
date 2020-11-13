@@ -49,8 +49,10 @@ namespace feng
         command_list->RSSetViewports(1, &renderer.viewport_);
         command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
 
-        command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderer.GetRenderWindow().CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-        command_list->OMSetRenderTargets(1, &renderer.GetRenderWindow().CurrentBackBufferView(), FALSE, nullptr);
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(renderer.GetRenderWindow().CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        command_list->ResourceBarrier(1, &transition);
+        auto handle = renderer.GetRenderWindow().CurrentBackBufferView();
+        command_list->OMSetRenderTargets(1, &handle, FALSE, nullptr);
 
         renderer.t_color_output_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         command_list->SetGraphicsRootDescriptorTable(0, renderer.t_color_output_->GetGPUSRV());

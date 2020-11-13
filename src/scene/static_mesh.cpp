@@ -72,6 +72,16 @@ namespace feng
         return ibv;
     }
 
+    void StaticMesh::DrawWithCommand(ID3D12GraphicsCommandList *command_list)
+    {
+        auto vbv = GetVertexBufferView();
+        auto ibv = GetIndexBufferView();
+        command_list->IASetVertexBuffers(0, 1, &vbv);
+        command_list->IASetIndexBuffer(&ibv);
+        command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        command_list->DrawIndexedInstanced(mesh_->index_count_, 1, 0, 0, 0);
+    }
+
     void StaticMesh::Update([[maybe_unused]] float deltatime)
     {
         if (dirty_)

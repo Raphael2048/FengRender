@@ -39,6 +39,7 @@ namespace feng
 
         D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView();
         D3D12_INDEX_BUFFER_VIEW GetIndexBufferView();
+        void DrawWithCommand(ID3D12GraphicsCommandList* command);
 
         virtual void Update([[maybe_unused]]float deltatime) override;
         virtual void RefreshBoundingBox() override;

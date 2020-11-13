@@ -187,12 +187,8 @@ namespace feng
                     auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
                     if (visibile[dis])
                     {
-                        StaticMesh *static_mesh = it->get();
-                        command_list->IASetVertexBuffers(0, 1, &static_mesh->GetVertexBufferView());
-                        command_list->IASetIndexBuffer(&static_mesh->GetIndexBufferView());
-                        command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
                         command_list->SetGraphicsRootConstantBufferView(0, object_buffer_base_address + dis * object_buffer.GetSize());
-                        command_list->DrawIndexedInstanced(static_mesh->mesh_->index_count_, 1, 0, 0, 0);
+                        it->get()->DrawWithCommand(command_list);
                     }
                 }
             }
@@ -221,9 +217,10 @@ namespace feng
         t_shadow_split[1]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         t_shadow_split[2]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-        command_list->OMSetRenderTargets(1, &renderer.t_color_output_->GetCPURTV(), FALSE, nullptr);
+        auto color_rtv = renderer.t_color_output_->GetCPURTV();
+        command_list->OMSetRenderTargets(1, &color_rtv, FALSE, nullptr);
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-        command_list->ClearRenderTargetView(renderer.t_color_output_->GetCPURTV(), colors, 1, &renderer.scissor_rect_);
+        command_list->ClearRenderTargetView(color_rtv, colors, 1, &renderer.scissor_rect_);
         
         command_list->SetGraphicsRootDescriptorTable(0, renderer.t_gbuffer_base_color_->GetGPUSRV());
         command_list->SetGraphicsRootDescriptorTable(1, t_shadow_split[0]->GetGPUSRV());

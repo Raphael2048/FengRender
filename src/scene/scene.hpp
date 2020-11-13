@@ -36,7 +36,7 @@ namespace feng
             {
                 StaticMeshProxy proxy;
                 proxy.pointer = (*it).get();
-                proxy.id = std::distance(StaticMeshes.cbegin(), it);
+                proxy.id = (uint32_t)std::distance(StaticMeshes.cbegin(), it);
                 StaticMeshesOctree->AddElement(proxy);
             }
         }
