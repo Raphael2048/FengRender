@@ -53,9 +53,8 @@ namespace feng
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
         t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
-        
+
         t_color_output_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
-        
 
         depth_only_.reset(new DepthOnly());
         depth_only_->Build(*this);
@@ -100,9 +99,7 @@ namespace feng
             auto &context = NodeIt.GetCurrentContext();
             for (const auto &ele : n.GetElements())
             {
-                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox) 
-                    && CameraFrustum.Intersects(ele.pointer->GetBoundingBox())
-                    )
+                if (ele.pointer->GetBoundingBox().Intersects(CameraBoundingBox) && CameraFrustum.Intersects(ele.pointer->GetBoundingBox()))
                 {
                     scene.StaticMeshesVisibity[ele.id] = true;
                 }
@@ -160,7 +157,16 @@ namespace feng
     {
         static std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> samplers = {
             CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP},
-            CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR}};
+            CD3DX12_STATIC_SAMPLER_DESC{
+                1,
+                D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+                D3D12_TEXTURE_ADDRESS_MODE_BORDER,
+                D3D12_TEXTURE_ADDRESS_MODE_BORDER,
+                D3D12_TEXTURE_ADDRESS_MODE_BORDER,
+                0.0f,
+                16,
+                D3D12_COMPARISON_FUNC_GREATER_EQUAL,
+                D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE}};
         return samplers;
     }
 

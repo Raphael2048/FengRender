@@ -9,6 +9,7 @@ Texture2D t_shadowmap_split1 : register(t5);
 Texture2D t_shadowmap_split2 : register(t6);
 
 SamplerState linear_sampler : register(s0);
+SamplerComparisonState shadow_sampler : register(s1);
 
 cbuffer light_constant:register(b0)
 {
@@ -16,7 +17,7 @@ cbuffer light_constant:register(b0)
     float4x4 shadowmap_split1;
     float4x4 shadowmap_split2;
     float3 light_direction;
-    float light_intensity;
+    float shadowmap_size;
     float3 light_color;
 }
 
@@ -62,11 +63,62 @@ float4 PS(VertexOut pin) : SV_Target
     float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), inv_view_proj);
     WorldSpacePos.xyz /= WorldSpacePos.w;
 
-    // return WorldSpacePos;
-
     float3 V = normalize(camera_pos - WorldSpacePos.xyz);
     float3 L = normalize(-light_direction);
     float3 H = normalize(L + V);
+
+    WorldSpacePos.w = 1.0f;
+    float3 ndc0 = mul(WorldSpacePos, shadowmap_split0).xyz;
+    float3 ndc1 = mul(WorldSpacePos, shadowmap_split1).xyz;
+    float3 ndc2 = mul(WorldSpacePos, shadowmap_split2).xyz;
+
+    float multiper = 1.0f;
+    float dx = 1.0f / shadowmap_size;
+    const float2 offsets[9] =
+    {
+        float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
+        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+        float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
+    };
+    [branch]
+    if (ndc0.z >= 0.0f && ndc0.z <= 1.0f)
+    {
+        ndc0.x = (ndc0.x + 1.0f) * 0.5f;
+        ndc0.y = (1.0f - ndc0.y) * 0.5f;
+        [unroll]
+        float sum = 0.0f;
+        for(int i = 0; i < 9; i++)
+        {
+            sum += t_shadowmap_split0.SampleCmpLevelZero(shadow_sampler, ndc0.xy + offsets[i], ndc0.z + 0.01f).r;
+        }
+        multiper = sum / 9.0f;
+    }
+    else if (ndc1.z >= 0.0f && ndc1.z <= 1.0f)
+    {
+        // ndc1.x = (ndc1.x + 1.0f) * 0.5f;
+        // ndc1.y = (1.0f - ndc1.y) * 0.5f;
+        // [unroll]
+        // float sum = 0.0f;
+        // for(int i = 0; i < 9; i++)
+        // {
+        //     sum += t_shadowmap_split1.SampleCmpLevelZero(shadow_sampler, ndc1.xy + offsets[i], ndc1.z + 0.01).r;
+        // }
+        // multiper = sum / 9.0f;
+    }
+    else if (ndc2.z >= 0.0f && ndc2.z <= 1.0f)
+    {
+        // ndc2.x = (ndc2.x + 1.0f) * 0.5f;
+        // ndc2.y = (1.0f - ndc2.y) * 0.5f;
+        // [unroll]
+        // float sum = 0.0f;
+        // for(int i = 0; i < 9; i++)
+        // {
+        //     sum += t_shadowmap_split2.SampleCmpLevelZero(shadow_sampler, ndc2.xy + offsets[i], ndc2.z + 0.01).r;
+        // }
+        // multiper = sum / 9.0f;
+    }
+
+
 
     float NdotH = max(dot(N, H), 0.0);
     float NdotV = max(dot(N, V), 0.0);
@@ -91,5 +143,8 @@ float4 PS(VertexOut pin) : SV_Target
 
     float3 output = (kD * BaseColor / PI + specular) * light_color * NdotL;
 
-    return float4(output, 0.0f);
+    return float4(output * multiper, 0.0f);
+    // return float4(
+    //     output * mu;
+    // );
 }

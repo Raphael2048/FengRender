@@ -22,7 +22,7 @@ namespace feng
             Matrix ShadowMatrix1;
             Matrix ShadowMatrix2;
             Vector3 LightDirection;
-            float pad;
+            float ShadowMapSize;
             Color Color;
         };
 

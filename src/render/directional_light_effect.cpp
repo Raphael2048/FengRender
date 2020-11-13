@@ -11,9 +11,9 @@ namespace feng
         shadow_pass_pso_ = depthEffect.pso_;
 
         // 这里GPU地址是连续的, 直接用range表示
-        t_shadow_split[0].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
-        t_shadow_split[1].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
-        t_shadow_split[2].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R16_TYPELESS, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_D16_UNORM));
+        t_shadow_split[0].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_shadow_split[1].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_shadow_split[2].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
 
         auto num = scene.StaticMeshes.size();
         shadow_visibity_split[0].resize(num);
@@ -33,7 +33,7 @@ namespace feng
 
         // For Lighting
         light_info_buffer_ = std::make_unique<ConstantBufferGroup<DirectionalLightBuffer, BACK_BUFFER_SIZE>>(renderer.GetDevice(), 1);
-        
+
         auto shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\directional_light.hlsl", nullptr);
         CD3DX12_ROOT_PARAMETER slotRootParameter[4];
 
@@ -48,7 +48,7 @@ namespace feng
 
         auto samplers = renderer.GetStaticSamplers();
 
-        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, 1, samplers.data(),
+        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, 2, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
         TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &light_pass_signature_));
 
@@ -100,8 +100,10 @@ namespace feng
             Vector3(0, 0, -(near2 + far2) * 0.5f),
             Vector3(half_width, half_height, (far2 - near2) * 0.5f));
 
+        float distances[4] = {  near0, far0, far1, far2 };
+
         Matrix CameraToLight = camera.MatrixWorld * dlight.MatrixInvWorld;
-        Matrix LightSapceOrthographicMatrix[3];
+        Matrix WorldToLightProjMatrixTransposed[3];
 
         command_list->SetPipelineState(shadow_pass_pso_.Get());
         command_list->RSSetViewports(1, &viewport_);
@@ -120,8 +122,9 @@ namespace feng
             XMStoreFloat3(&MINP, MINPV);
 
             MAXP.z = MINP.z + dlight.shadow_distance_;
+            Matrix LightSapceOrthographicMatrix;
             // RESERVE-Z
-            DirectX::XMStoreFloat4x4(LightSapceOrthographicMatrix + i,
+            DirectX::XMStoreFloat4x4(&LightSapceOrthographicMatrix,
                                      XMMatrixOrthographicOffCenterRH(MINP.x, MAXP.x, MINP.y, MAXP.y, -MINP.z, -MAXP.z));
 
             MAXPV = XMLoadFloat3(&MAXP);
@@ -131,8 +134,15 @@ namespace feng
             XMStoreFloat3(&LightSpaceBoundingBox.Extents, XMVectorScale(XMVectorSubtract(MAXPV, MINPV), 0.5f));
             Box WorldSpaceBoundingBox = LightSpaceBoundingBox.Transform(dlight.MatrixWorld);
 
-            BoundingOrientedBox WorldSpaceOBB(
-                LightSpaceBoundingBox.Center, LightSpaceBoundingBox.Extents, Vector4());
+            auto currentFrustum = camera.GetBoundingFrustrum();
+            currentFrustum.Near = distances[i];
+            currentFrustum.Far = distances[i + 1];
+            if (WorldSpaceBoundingBox.Contains(currentFrustum) != ContainmentType::CONTAINS)
+            {
+                FMSG("HAHA");
+            }
+
+            BoundingOrientedBox WorldSpaceOBB(WorldSpaceBoundingBox.Center, LightSpaceBoundingBox.Extents, Vector4());
             dlight.CalQuaternion(WorldSpaceOBB.Orientation);
 
             std::vector<bool> visibile;
@@ -145,7 +155,9 @@ namespace feng
                     auto &context = NodeIt.GetCurrentContext();
                     for (const auto &ele : n.GetElements())
                     {
-                        if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox) && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox()))
+                        // if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox)
+                        //  && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox())
+                        //  )
                         {
                             visibile[ele.id] = true;
                         }
@@ -164,16 +176,16 @@ namespace feng
                 PassConstantBuffer constant;
                 constant.InvView = dlight.MatrixWorld.Transpose();
                 constant.View = dlight.MatrixInvWorld.Transpose();
-                constant.Proj = LightSapceOrthographicMatrix[i].Transpose();
+                constant.Proj = LightSapceOrthographicMatrix.Transpose();
                 constant.InvProj = constant.Proj.Invert();
                 constant.ViewProj = constant.Proj * constant.View;
                 constant.InvViewProj = constant.InvView * constant.InvProj;
+                WorldToLightProjMatrixTransposed[i] = constant.ViewProj;
                 auto &pass_buffer = dlight_pass_constant_buffer_->operator[](idx);
                 pass_buffer.Write(i, constant);
 
                 t_shadow_split[i]->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
                 auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(t_shadow_split[i]->GetDSVHeapIndex());
-
                 command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
                 command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
                 command_list->SetGraphicsRootSignature(shadow_pass_signature_.Get());
@@ -195,10 +207,11 @@ namespace feng
         }
 
         DirectionalLightBuffer dlightbuffer;
-        dlightbuffer.ShadowMatrix0 = LightSapceOrthographicMatrix[0].Transpose();
-        dlightbuffer.ShadowMatrix1 = LightSapceOrthographicMatrix[1].Transpose();
-        dlightbuffer.ShadowMatrix2 = LightSapceOrthographicMatrix[2].Transpose();
+        dlightbuffer.ShadowMatrix0 = WorldToLightProjMatrixTransposed[0];
+        dlightbuffer.ShadowMatrix1 = WorldToLightProjMatrixTransposed[1];
+        dlightbuffer.ShadowMatrix2 = WorldToLightProjMatrixTransposed[2];
         dlightbuffer.Color = dlight.color_;
+        dlightbuffer.ShadowMapSize = 2048.0f;
         dlightbuffer.LightDirection = dlight.MatrixWorld.Forward();
         light_info_buffer_->operator[](idx).Write(0, dlightbuffer);
 
@@ -221,7 +234,7 @@ namespace feng
         command_list->OMSetRenderTargets(1, &color_rtv, FALSE, nullptr);
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(color_rtv, colors, 1, &renderer.scissor_rect_);
-        
+
         command_list->SetGraphicsRootDescriptorTable(0, renderer.t_gbuffer_base_color_->GetGPUSRV());
         command_list->SetGraphicsRootDescriptorTable(1, t_shadow_split[0]->GetGPUSRV());
         command_list->SetGraphicsRootConstantBufferView(2, light_info_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
