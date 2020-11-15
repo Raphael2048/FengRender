@@ -18,7 +18,7 @@ namespace feng
         virtual Node& SetPosition([[maybe_unused]]const Vector3& pos) override { return *this; }
     private:
         Color color_;
-        float shadow_distance_ = 100.0f;
+        float shadow_distance_ = 200.0f;
     };
 
     

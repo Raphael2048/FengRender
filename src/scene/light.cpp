@@ -7,7 +7,7 @@ namespace feng
     {
     }
 
-    void DirectionalLight::Update(float deltetime)
+    void DirectionalLight::Update([[maybe_unused]]float deltetime)
     {
         if (dirty_)
         {
@@ -18,7 +18,7 @@ namespace feng
 
             MatrixInvWorld = MatrixWorld.Invert();
 
-            cb_dirty_ = BACK_BUFFER_SIZE;
+            cb_ready_ = 0;
         }
     }
 } // namespace feng

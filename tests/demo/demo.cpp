@@ -10,8 +10,8 @@ protected:
     {
         Root->SetCamera(new Camera(Vector3{10, 50, 20}, Vector3{0, 0, 0}, 1.0f, 300.0f, 60.0f, 1280.0f / 720.0f));
 
-        Root->SetDirectionalLight(new DirectionalLight(
-            Vector3(-60, 60, 0), Color(3, 2, 1)));
+         Root->SetDirectionalLight(new DirectionalLight(
+            Vector3(0, -90, 0), Color(3, 2, 1)));
 
         auto pica = AssimpMeshLoader::LoadModel("resources\\models\\pica_scene.fbx");
         auto sphere = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");

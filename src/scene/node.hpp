@@ -45,14 +45,14 @@ namespace feng
             return scale_;
         }
 
-        bool IsCBDirty()
+        bool IsCBReady(uint8_t idx) const
         {
-            if (cb_dirty_ > 0)
+            bool ready = cb_ready_ << idx & 1;
+            if (!ready)
             {
-                --cb_dirty_;
-                return true;
+                cb_ready_ = cb_ready_ | 1 << idx;
             }
-            return false;
+            return ready;
         }
 
         const Box& GetBoundingBox()
@@ -94,6 +94,6 @@ namespace feng
         // for bounding box
         bool box_dirty_ : 1 = true;
         // for constant buffer
-        uint8_t cb_dirty_ : 3 = BACK_BUFFER_SIZE;
+        mutable uint8_t cb_ready_ = 0;
     };
 } // namespace feng
