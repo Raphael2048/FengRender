@@ -75,7 +75,7 @@ namespace feng
         uint8_t idx = render_window_->CurrentFrameIdx();
         GetDevice().Wait(idx);
         auto &camera = *(scene.Camera);
-        if (camera.IsCBDirty())
+        if (!camera.IsCBReady(idx))
         {
             PassConstantBuffer constant;
             // swaped matrix for camera
@@ -117,14 +117,9 @@ namespace feng
 
         for (auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
-            int dis = (int)std::distance(scene.StaticMeshes.cbegin(), it);
-            if (scene.StaticMeshesVisibity[dis] && it->get()->IsCBDirty())
-            {
-                ObjectConstantBuffer buffer;
-                buffer.World = it->get()->MatrixWorld.Transpose();
-                buffer.InvWorld = it->get()->MatrixInvWorld.Transpose();
-                object_constant_buffer_->operator[](idx).Write(dis, buffer);
-            }
+            auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
+            if (scene.StaticMeshesVisibity[dis])
+                RefreshConstantBuffer(*(it->get()), idx, dis);
         }
         auto command_list = GetDevice().BeginCommand(idx, nullptr);
 
@@ -151,6 +146,17 @@ namespace feng
         render_window_->Swap();
         // IDX + 1, Next Frame
         device_->Signal(render_window_->CurrentFrameIdx());
+    }
+
+    void Renderer::RefreshConstantBuffer(const StaticMesh& mesh, uint8_t idx, ptrdiff_t distance)
+    {
+        if (!mesh.IsCBReady(idx))
+        {
+            ObjectConstantBuffer buffer;
+            buffer.World = mesh.MatrixWorld.Transpose();
+            buffer.InvWorld = mesh.MatrixInvWorld.Transpose();
+            object_constant_buffer_->operator[](idx).Write(distance, buffer);
+        }
     }
 
     std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> &Renderer::GetStaticSamplers()

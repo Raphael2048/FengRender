@@ -95,7 +95,7 @@ namespace feng
 
             MatrixInvWorld = MatrixWorld.Invert();
 
-            cb_dirty_ = BACK_BUFFER_SIZE;
+            cb_ready_ = 0;
             box_dirty_ = true;
         };
     }

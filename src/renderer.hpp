@@ -31,6 +31,7 @@ namespace feng
     };
     class Window;
     class Scene;
+    class StaticMesh;
     class Renderer
     {
     public:
@@ -40,6 +41,7 @@ namespace feng
         RenderWindow &GetRenderWindow() { return *render_window_; }
         void Init(const Scene &scene);
         void Draw(Scene &scene);
+        void RefreshConstantBuffer(const StaticMesh& mesh, uint8_t idx, ptrdiff_t distance);
 
         std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> &GetStaticSamplers();
 

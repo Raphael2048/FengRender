@@ -81,24 +81,24 @@ namespace feng
         float near2 = far1;
         float far2 = camera.far_;
 
-        // 渐变切换
-        // far0 = (far0 - near0) * 0.1f + far0;
-        // near2 = near2 - (far2 - near2) * 0.1f;
+        // 空间冗余
+        far0 = (far0 - near0) / 9.0f + far0;
+        far1 = (far1 - near1) / 9.0f + far1;
 
         float half_height = tan(DirectX::XMConvertToRadians(camera.fov_) * 0.5f) * camera.far_;
         float half_width = half_height * camera.aspect_;
         Box box[3];
         new (box) Box(
-            Vector3(0, 0, -(near0 + far0) * 0.5f),
-            Vector3(half_width * far0 / far2, half_height * far0 / far2, (far0 - near0) * 0.5f));
+           Vector3(0, 0, -(near0 + far0) * 0.5f),
+           Vector3(half_width * far0 / far2, half_height * far0 / far2, (far0 - near0) * 0.5f));
 
         new (box + 1) Box(
-            Vector3(0, 0, -(near1 + far1) * 0.5f),
-            Vector3(half_width * far1 / far2, half_height * far1 / far2, (far1 - near1) * 0.5f));
+           Vector3(0, 0, -(near1 + far1) * 0.5f),
+           Vector3(half_width * far1 / far2, half_height * far1 / far2, (far1 - near1) * 0.5f));
 
         new (box + 2) Box(
-            Vector3(0, 0, -(near2 + far2) * 0.5f),
-            Vector3(half_width, half_height, (far2 - near2) * 0.5f));
+           Vector3(0, 0, -(near2 + far2) * 0.5f),
+           Vector3(half_width, half_height, (far2 - near2) * 0.5f));
 
         float distances[4] = {  near0, far0, far1, far2 };
 
@@ -121,7 +121,7 @@ namespace feng
             XMStoreFloat3(&MAXP, MAXPV);
             XMStoreFloat3(&MINP, MINPV);
 
-            MAXP.z = MINP.z + dlight.shadow_distance_;
+            MAXP.z = (std::max)(MINP.z + dlight.shadow_distance_, MAXP.z);
             Matrix LightSapceOrthographicMatrix;
             // RESERVE-Z
             DirectX::XMStoreFloat4x4(&LightSapceOrthographicMatrix,
@@ -131,7 +131,7 @@ namespace feng
             //需要绘制物体的区域
             Box LightSpaceBoundingBox;
             XMStoreFloat3(&LightSpaceBoundingBox.Center, XMVectorScale(XMVectorAdd(MAXPV, MINPV), 0.5f));
-            XMStoreFloat3(&LightSpaceBoundingBox.Extents, XMVectorScale(XMVectorSubtract(MAXPV, MINPV), 0.5f));
+            XMStoreFloat3(&LightSpaceBoundingBox.Extents, XMVectorScale(XMVectorSubtract(MAXPV, MINPV), 0.51f));
             Box WorldSpaceBoundingBox = LightSpaceBoundingBox.Transform(dlight.MatrixWorld);
 
             auto currentFrustum = camera.GetBoundingFrustrum();
@@ -147,6 +147,10 @@ namespace feng
 
             std::vector<bool> visibile;
             visibile.resize(scene.StaticMeshes.size());
+            t_shadow_split[i]->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+            auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(t_shadow_split[i]->GetDSVHeapIndex());
+            command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
+            command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
             if (WorldSpaceBoundingBox.Intersects(scene.StaticMeshesOctree->GetRootBounds()))
             {
                 for (Octree<Scene::StaticMeshProxy>::NodeIterator NodeIt(*(scene.StaticMeshesOctree)); NodeIt.HasPendingNodes(); NodeIt.Advance())
@@ -155,11 +159,12 @@ namespace feng
                     auto &context = NodeIt.GetCurrentContext();
                     for (const auto &ele : n.GetElements())
                     {
-                        // if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox)
-                        //  && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox())
-                        //  )
+                          if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox)
+                           && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox())
+                           )
                         {
                             visibile[ele.id] = true;
+                            renderer.RefreshConstantBuffer(*(ele.pointer), idx, ele.id);
                         }
                     }
 
@@ -184,10 +189,6 @@ namespace feng
                 auto &pass_buffer = dlight_pass_constant_buffer_->operator[](idx);
                 pass_buffer.Write(i, constant);
 
-                t_shadow_split[i]->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-                auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(t_shadow_split[i]->GetDSVHeapIndex());
-                command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
-                command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
                 command_list->SetGraphicsRootSignature(shadow_pass_signature_.Get());
                 command_list->SetGraphicsRootConstantBufferView(
                     1, pass_buffer.GetResource()->GetGPUVirtualAddress() + pass_buffer.GetSize() * i);

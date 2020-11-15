@@ -9,7 +9,7 @@ namespace feng
     {
     }
 
-    void Camera::Update(float delta)
+    void Camera::Update([[maybe_unused]]float delta)
     {
         if (dirty_)
         {
@@ -24,7 +24,7 @@ namespace feng
 
             MatrixInvProj = MatrixProj.Invert();
 
-            cb_dirty_ = BACK_BUFFER_SIZE;
+            cb_ready_ = 0;
             box_dirty_ = true;
         }
     }
