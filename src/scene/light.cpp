@@ -2,9 +2,10 @@
 
 namespace feng
 {
-    DirectionalLight::DirectionalLight(const Vector3 &rotation, const Color &color)
-        : Node(Vector3::Zero, rotation, Vector3::One), color_(color)
+    DirectionalLight::DirectionalLight(const Vector3 &direction, const Color &color)
+        : Node(Vector3::Zero, Vector3::Zero, Vector3::One), color_(color), direction_(direction)
     {
+        direction_.Normalize();
     }
 
     void DirectionalLight::Update([[maybe_unused]] float deltetime)
@@ -12,9 +13,18 @@ namespace feng
         if (dirty_)
         {
             dirty_ = false;
-            MatrixWorld = Matrix::CreateFromYawPitchRoll(
-                DirectX::XMConvertToRadians(rotation_.y),
-                DirectX::XMConvertToRadians(rotation_.x), 0.0f);
+            Vector3 Z = -direction_;
+            Vector3 X = Vector3::Up.Cross(Z);
+            if (X.LengthSquared() == 0.0f)
+            {
+                X = Vector3::Right;
+            }
+            else
+            {
+                X.Normalize();
+            }
+            Vector3 Y = Z.Cross(X);
+            MatrixWorld = Matrix(X, Y, Z);
 
             MatrixInvWorld = MatrixWorld.Invert();
 
@@ -22,9 +32,10 @@ namespace feng
         }
     }
 
-    SpotLight::SpotLight(const Vector3 &position, const Vector3 &rotation, const Color &color, float radius, float angle, float outer_angle, bool has_shadow)
-        : Node(position, rotation, Vector3::One), color_(color), radius_(radius), inner_angle_(angle), outer_angle_(outer_angle), cast_shadow_(has_shadow)
+    SpotLight::SpotLight(const Vector3 &position, const Vector3 &direction, const Color &color, float radius, float angle, float outer_angle)
+        : Node(position, Vector3::Zero, Vector3::One), color_(color), direction_(direction), radius_(radius), inner_angle_(angle), outer_angle_(outer_angle)
     {
+        direction_.Normalize();
     }
 
     void SpotLight::Update([[maybe_unused]] float deltetime)
@@ -32,7 +43,14 @@ namespace feng
         if (dirty_)
         {
             dirty_ = false;
-            MatrixWorld = Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(rotation_.y), DirectX::XMConvertToRadians(rotation_.x), 0.0f);
+            Vector3 Z = -direction_;
+            Vector3 X = Vector3::Up.Cross(Z);
+            if (X.LengthSquared() == 0.0f)
+                X = Vector3::Right;
+            else
+                X.Normalize();
+            Vector3 Y = Z.Cross(X);
+            MatrixWorld = Matrix(X, Y, Z);
             MatrixWorld *= Matrix::CreateTranslation(position_);
             MatrixInvWorld = MatrixWorld.Invert();
 
@@ -52,14 +70,14 @@ namespace feng
         }
         return frustum_;
     }
-    
-    void SpotLight:: RefreshBoundingBox()
+
+    void SpotLight::RefreshBoundingBox()
     {
         float topSlope = tan(DirectX::XMConvertToRadians(outer_angle_));
         float half_height = topSlope * radius_;
         float half_width = half_height;
         Box origin = Box(
-            Vector3(0, 0, radius_ * 0.5f),
+            Vector3(0, 0, -radius_ * 0.5f),
             Vector3(half_width, half_height, radius_ * 0.5f));
         box_ = origin.Transform(MatrixWorld);
 
@@ -70,9 +88,7 @@ namespace feng
         frustum_.Origin = position_;
 
         using namespace DirectX;
-        XMVECTOR v = XMLoadFloat3(&rotation_);
-        v = XMVectorScale(v, XM_PI / 180.0f);
-        v = XMQuaternionRotationRollPitchYawFromVector(v);
+        XMVECTOR v = XMQuaternionRotationMatrix(MatrixWorld);
         XMFLOAT4 RotateY180(0.0f, 1.0f, 0.0f, 0.0f);
         XMVECTOR v2 = XMLoadFloat4(&RotateY180);
         XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionMultiply(v2, v));

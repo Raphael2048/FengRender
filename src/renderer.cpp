@@ -122,20 +122,25 @@ namespace feng
         ID3D12DescriptorHeap *heaps[] = {device_->GetSRVHeap().Heap()};
         command_list->SetDescriptorHeaps(1, heaps);
 
-        // Depth Prepass
+        // DepthOnly PrePass
         depth_only_->Draw(*this, scene, command_list, idx);
-        // GBuffer Output
+        // WriteToGBUFFER
         gbuffer_output_->Draw(*this, scene, command_list, idx);
 
+        //Prepare For Lighting
+        t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_gbuffer_normal->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_color_output_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
+
         if (scene.DirectionalLight)
-        {
             directional_light_effect_->Draw(*this, scene, command_list, idx);
-        }
 
         if (scene.SpotLights.size() > 0)
-        {
             spot_light_effect_->Draw(*this, scene, command_list, idx);
-        }
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

@@ -143,7 +143,7 @@ namespace feng
             }
 
             BoundingOrientedBox WorldSpaceOBB(WorldSpaceBoundingBox.Center, LightSpaceBoundingBox.Extents, Vector4());
-            dlight.CalQuaternion(WorldSpaceOBB.Orientation);
+            DirectX::XMStoreFloat4(&WorldSpaceOBB.Orientation, XMQuaternionRotationMatrix(dlight.MatrixWorld));
 
             std::vector<bool> visibile;
             visibile.resize(scene.StaticMeshes.size());
@@ -220,22 +220,13 @@ namespace feng
         command_list->RSSetViewports(1, &renderer.viewport_);
         command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
         command_list->SetGraphicsRootSignature(light_pass_signature_.Get());
-
-        renderer.t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        renderer.t_gbuffer_normal->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        renderer.t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        renderer.t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        renderer.t_color_output_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
+        
         t_shadow_split[0]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         t_shadow_split[1]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         t_shadow_split[2]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
         auto color_rtv = renderer.t_color_output_->GetCPURTV();
         command_list->OMSetRenderTargets(1, &color_rtv, FALSE, nullptr);
-        float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-        command_list->ClearRenderTargetView(color_rtv, colors, 1, &renderer.scissor_rect_);
-
         command_list->SetGraphicsRootDescriptorTable(0, renderer.t_gbuffer_base_color_->GetGPUSRV());
         command_list->SetGraphicsRootDescriptorTable(1, t_shadow_split[0]->GetGPUSRV());
         command_list->SetGraphicsRootConstantBufferView(2, light_info_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());

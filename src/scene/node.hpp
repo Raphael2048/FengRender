@@ -47,10 +47,10 @@ namespace feng
 
         bool IsCBReady(uint8_t idx) const
         {
-            bool ready = cb_ready_ << idx & 1;
+            bool ready = (cb_ready_ << idx) & 1;
             if (!ready)
             {
-                cb_ready_ = cb_ready_ | 1 << idx;
+                cb_ready_ = cb_ready_ | (1 << idx);
             }
             return ready;
         }

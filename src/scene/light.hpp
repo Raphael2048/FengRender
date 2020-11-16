@@ -10,14 +10,23 @@ namespace feng
     public:
         friend class DirectionalLightEffect;
         // HDR linear color, unit : (W/m^2) or (lux)
-        DirectionalLight(const Vector3 &rotation, const Color &color);
+        DirectionalLight(const Vector3& direction, const Color &color);
 
         virtual void Update(float time) override;
 
         virtual Node &SetScale([[maybe_unused]] const Vector3 &scale) override { return *this; }
         virtual Node &SetPosition([[maybe_unused]] const Vector3 &pos) override { return *this; }
+        virtual Node &SetRotation([[maybe_unused]] const Vector3 &rotation) override { return *this; }
+        DirectionalLight& SetDirection(const Vector3& direction)
+        {
+            direction_ = direction;
+            direction_.Normalize();
+            dirty_ = true;
+            return *this;
+        }
 
     private:
+        Vector3 direction_;
         Color color_;
         float shadow_distance_ = 200.0f;
     };
@@ -25,14 +34,26 @@ namespace feng
     class SpotLight : public Node
     {
     public:
-        SpotLight(const Vector3& position, const Vector3& rotation, const Color& color, float radius, float inner_angle, float outer_angle_, bool has_shadow);
+        friend class SpotLightEffect;
+        SpotLight(const Vector3& position, const Vector3& direction, const Color& color, float radius, float inner_angle, float outer_angle_);
         virtual void Update(float time) override;
         virtual void RefreshBoundingBox() override;
+        virtual Node &SetScale([[maybe_unused]] const Vector3 &scale) override { return *this; }
+        virtual Node &SetRotation([[maybe_unused]] const Vector3 &rotation) override { return *this; }
+        SpotLight& SetDirection(const Vector3& direction)
+        {
+            direction_ = direction;
+            direction_.Normalize();
+            dirty_ = true;
+            return *this;
+        }
+
         const DirectX::BoundingFrustum GetBoundingFrustum();
         Matrix MatrixProj;
         Matrix MatrixInvProj;
     private:
         DirectX::BoundingFrustum frustum_;
+        Vector3 direction_;
         // 单位 (W/sr) or (cd)
         Color color_;
         float radius_;

@@ -14,7 +14,7 @@ cbuffer light_constant:register(b0)
     float4x4 shadowmap_splits[3];
     float3 light_direction;
     float shadowmap_size;
-    float3 light_color;
+    float4 light_color;
 }
 
 cbuffer pass_constant : register(b1)
@@ -60,7 +60,6 @@ float GetAt(float3 ndc, int index)
     // };
     float u = (ndc.x + 1.0f) * 0.5f;
     float v = (1.0f - ndc.y) * 0.5f;
-    float2 pos = float2(u, v);
     float sum = 0.0f;
     sum +=  t_shadowmap_splits[index].SampleCmpLevelZero(shadow_sampler, float2(u + dx, v + dx) , ndc.z + 0.001f).r;
     sum +=  t_shadowmap_splits[index].SampleCmpLevelZero(shadow_sampler, float2(u + dx, v - dx) , ndc.z + 0.001f).r;

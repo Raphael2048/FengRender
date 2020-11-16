@@ -20,7 +20,6 @@ namespace feng
     private:
         struct SpotLightBuffer
         {
-            Matrix LightToWorldMatrix;
             Matrix ShadowMatrix;
             Vector3 LightPosition;
             float Radius;
