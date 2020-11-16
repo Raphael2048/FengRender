@@ -56,18 +56,14 @@ namespace feng
 
         t_color_output_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
 
-        depth_only_.reset(new DepthOnly());
-        depth_only_->Build(*this);
-
-        gbuffer_output_.reset(new GBufferOutput());
-        gbuffer_output_->Build(*this);
-
+        depth_only_.reset(new DepthOnly(*this));
+        gbuffer_output_.reset(new GBufferOutput(*this));
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
 
         if (scene.DirectionalLight)
-        {
             directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
-        }
+        if (scene.SpotLights.size() > 0)
+            spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
     }
 
     void Renderer::Draw(Scene &scene)
@@ -136,6 +132,11 @@ namespace feng
             directional_light_effect_->Draw(*this, scene, command_list, idx);
         }
 
+        if (scene.SpotLights.size() > 0)
+        {
+            spot_light_effect_->Draw(*this, scene, command_list, idx);
+        }
+
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);
 
@@ -148,7 +149,7 @@ namespace feng
         device_->Signal(render_window_->CurrentFrameIdx());
     }
 
-    void Renderer::RefreshConstantBuffer(const StaticMesh& mesh, uint8_t idx, ptrdiff_t distance)
+    void Renderer::RefreshConstantBuffer(const StaticMesh &mesh, uint8_t idx, ptrdiff_t distance)
     {
         if (!mesh.IsCBReady(idx))
         {

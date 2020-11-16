@@ -42,6 +42,11 @@ namespace feng
             return resource_.Get();
         }
 
+        D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddressOf(int at) const
+        {
+            return resource_->GetGPUVirtualAddress() + at * size_;
+        }
+
         size_t GetSize() {return size_; }
 
         void Write(int idx, const T &data)

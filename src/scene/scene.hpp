@@ -9,16 +9,16 @@ namespace feng
     class Scene : public Uncopyable
     {
     public:
-
         void SetCamera(Camera *camera) { Camera.reset(camera); }
         void SetDirectionalLight(DirectionalLight *light) { DirectionalLight.reset(light); }
         void AddStaticMesh(StaticMesh *mesh) { StaticMeshes.emplace_back(mesh); }
+        void AddSpotLight(SpotLight *light) { SpotLights.emplace_back(light); }
         void Init()
         {
             // 先算出BoundingBox
             Update(0);
             Box bounds = StaticMeshes[0]->GetBoundingBox();
-            for (auto& mesh : StaticMeshes)
+            for (auto &mesh : StaticMeshes)
             {
                 bounds = bounds.Combine(mesh->GetBoundingBox());
             }
@@ -26,11 +26,7 @@ namespace feng
             StaticMeshesOctree.reset(
                 new Octree<StaticMeshProxy>(
                     bounds.Center,
-                    (std::max)({
-                        bounds.Extents.x, bounds.Extents.y, bounds.Extents.z
-                    })
-                )
-            );
+                    (std::max)({bounds.Extents.x, bounds.Extents.y, bounds.Extents.z})));
             StaticMeshesVisibity.resize(StaticMeshes.size());
             for (auto it = StaticMeshes.cbegin(); it != StaticMeshes.cend(); ++it)
             {
@@ -44,7 +40,13 @@ namespace feng
         {
             Camera->Update(delta);
 
-            if (DirectionalLight) DirectionalLight->Update(delta);
+            if (DirectionalLight)
+                DirectionalLight->Update(delta);
+
+            for (auto &light : SpotLights)
+            {
+                light->Update(delta);
+            }
 
             for (auto &node : StaticMeshes)
             {
@@ -55,12 +57,13 @@ namespace feng
         std::unique_ptr<Camera> Camera;
 
         std::unique_ptr<DirectionalLight> DirectionalLight;
+        std::vector<std::unique_ptr<SpotLight>> SpotLights;
 
         std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;
 
         struct StaticMeshProxy
         {
-            StaticMesh* pointer;
+            StaticMesh *pointer;
             uint32_t id;
             static const int MaxNodeDepth = 5;
             static const int MaxElementsPerLeaf = 5;

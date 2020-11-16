@@ -4,7 +4,7 @@
 #include "dx12/dx12_shader.hpp"
 namespace feng
 {
-    void DepthOnly::Build(Renderer& renderer)
+    DepthOnly::DepthOnly(Renderer& renderer)
     {
         shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\depth_only.hlsl", nullptr);
         CD3DX12_ROOT_PARAMETER slotRootParameter[2];

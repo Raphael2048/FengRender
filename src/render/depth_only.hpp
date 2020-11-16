@@ -8,7 +8,8 @@ namespace feng
     {
     public:
         friend class DirectionalLightEffect;
-        void Build(Renderer& renderer);
+        friend class SpotLightEffect;
+        DepthOnly(Renderer& renderer);
 
         void Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList* command_list, uint8_t idx);
     };

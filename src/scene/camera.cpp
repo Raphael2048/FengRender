@@ -63,7 +63,6 @@ namespace feng
         v = XMQuaternionRotationRollPitchYawFromVector(v);
         XMFLOAT4 RotateY180(0.0f, 1.0f, 0.0f, 0.0f);
         XMVECTOR v2 = XMLoadFloat4(&RotateY180);
-        // v2 = XMQuaternionRotationRollPitchYawFromVector(v2);
         XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionMultiply(v2, v));
     }
 

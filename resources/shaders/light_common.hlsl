@@ -40,3 +40,26 @@ float3 FresnelSchlick (float3 f0, float cosTheta)
 {
     return f0 + (1.0f - f0) * pow(1.0f - cosTheta, 5.0f);
 }
+
+float3 PBRLight(float3 N, float3 V, float3 L, float3 BaseColor, float Roughness, float Metallic)
+{
+    float3 H = normalize(L + V);
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float HdotV = max(dot(H, V), 0.0);
+    float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), BaseColor, Roughness);
+    float NDF = DistributionGGX(NdotH, Roughness);
+    float G = GeometrySchlickGGX(NdotV, Roughness) * GeometrySchlickGGX(NdotL, Roughness);
+    float3 F = FresnelSchlick(F0, HdotV);
+
+    float3 nominator = NDF * G * F;
+    float denominator = 4 * NdotV * NdotL + 0.001;
+    float3 specular = nominator / denominator;
+
+    float3 kS = F;
+    float3 kD = float3(1.0, 1.0, 1.0) - kS;
+    kD *= (1.0 - Metallic);
+
+    return (kD * BaseColor / PI + specular) * NdotL;
+}

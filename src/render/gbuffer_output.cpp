@@ -3,7 +3,7 @@
 #include "scene/scene.hpp"
 namespace feng
 {
-    void GBufferOutput::Build(Renderer &renderer)
+    GBufferOutput::GBufferOutput(Renderer &renderer)
     {
         shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\gbuffer_output.hlsl", nullptr);
         CD3DX12_ROOT_PARAMETER slotRootParameter[3];

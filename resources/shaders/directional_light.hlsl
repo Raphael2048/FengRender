@@ -58,12 +58,6 @@ float GetAt(float3 ndc, int index)
     //     float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
     //     float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
     // };
-
-    const float2 offset[4] =
-    {
-        float2(-dx,  -dx),  float2(dx,  -dx),
-        float2(-dx,  +dx),  float2(dx,  +dx)
-    };
     float u = (ndc.x + 1.0f) * 0.5f;
     float v = (1.0f - ndc.y) * 0.5f;
     float2 pos = float2(u, v);
@@ -83,7 +77,6 @@ bool InsideBox(float3 ndc)
 }
 float4 PS(VertexOut pin) : SV_Target
 {
-    float3 N = t_gbuffer_normal.Sample(linear_sampler, pin.uv).rgb * 2.0 - 1.0;
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.Sample(linear_sampler, pin.uv).rg;
     float3 BaseColor = t_gbuffer_base_color.Sample(linear_sampler, pin.uv).rgb;
 
@@ -92,9 +85,9 @@ float4 PS(VertexOut pin) : SV_Target
     float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), inv_view_proj);
     WorldSpacePos.xyz /= WorldSpacePos.w;
 
+    float3 N = t_gbuffer_normal.Sample(linear_sampler, pin.uv).rgb * 2.0 - 1.0;
     float3 V = normalize(camera_pos - WorldSpacePos.xyz);
     float3 L = normalize(-light_direction);
-    float3 H = normalize(L + V);
 
     WorldSpacePos.w = 1.0f;
     float3 ndc[3];
@@ -129,30 +122,10 @@ float4 PS(VertexOut pin) : SV_Target
 #endif
     }
 
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float HdotV = max(dot(H, V), 0.0);
-
-    float3 F0 = float3(0.04f, 0.04f, 0.04f);
-    F0 = lerp(F0, BaseColor, RoughnessMetallic.y);
-
-    float NDF = DistributionGGX(NdotH, RoughnessMetallic.x);
-    float G = GeometrySchlickGGX(NdotV, RoughnessMetallic.x) * GeometrySchlickGGX(NdotL, RoughnessMetallic.x);
-    float3 F = FresnelSchlick(F0, HdotV);
-
-    float3 nominator = NDF * G * F;
-    float denominator = 4 * NdotV * NdotL + 0.001;
-    float3 specular = nominator / denominator;
-
-    float3 kS = F;
-    float3 kD = float3(1.0, 1.0, 1.0) - kS;
-    kD *= (1.0 - RoughnessMetallic.y);
-
-    float3 output = (kD * BaseColor / PI + specular) * light_color * NdotL;
+    float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color ;
 
 #ifdef DEBUG
-    return float4(ndc[0].z, ndc[1].z, ndc[2].z, 0.0f)* multiper ;
+    return float4(ndc[0].z, ndc[1].z, ndc[2].z, 0.0f) * multiper ;
 #else
     return float4(output * multiper, 0.0f);
 #endif
