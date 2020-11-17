@@ -6,6 +6,7 @@ struct PassConstant
     float4x4 inv_proj;
     float4x4 view_proj;
     float4x4 inv_view_proj;
+    float3 camera_pos;
 };
 
 static const float PI = 3.14159265359;

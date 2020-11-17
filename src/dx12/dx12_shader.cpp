@@ -18,8 +18,8 @@ namespace feng
 
     GraphicsShader::GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO *defines)
     {
-        vs_bytes_ = CompileShader(filename, defines, "VS", "vs_5_0");
-        ps_bytes_ = CompileShader(filename, defines, "PS", "ps_5_0");
+        vs_bytes_ = CompileShader(filename, defines, "VS", "vs_5_1");
+        ps_bytes_ = CompileShader(filename, defines, "PS", "ps_5_1");
     }
 
     void GraphicsShader::FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC &desc)

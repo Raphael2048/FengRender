@@ -2,9 +2,9 @@
 
 Texture2D t_gbuffer_base_color : register(t0);
 Texture2D t_gbuffer_normal : register(t1);
-Texture2D t_gbuffer_roghness_metallic : register(t2);
-Texture2D t_depth : register(t3);
-Texture2D t_shadowmap_splits[3] : register(t4);
+Texture2D<float2> t_gbuffer_roghness_metallic : register(t2);
+Texture2D<float> t_depth : register(t3);
+Texture2D<float> t_shadowmap_splits[3] : register(t4);
 
 SamplerState linear_sampler : register(s0);
 SamplerComparisonState shadow_sampler : register(s1);
@@ -15,18 +15,9 @@ cbuffer light_constant:register(b0)
     float3 light_direction;
     float shadowmap_size;
     float4 light_color;
-}
-
-cbuffer pass_constant : register(b1)
-{
-    float4x4 view;
-    float4x4 inv_view;
-    float4x4 proj;
-    float4x4 inv_proj;
-    float4x4 view_proj;
-    float4x4 inv_view_proj;
-    float3 camera_pos;
 };
+
+ConstantBuffer<PassConstant> PC : register(b1);
 
 struct VertexIn
 {
@@ -81,11 +72,11 @@ float4 PS(VertexOut pin) : SV_Target
 
     float3 ScreenSpacePos = float3(
         pin.uv.x * 2.0f - 1.0f, 1.0f - pin.uv.y * 2.0f,  t_depth.Sample(linear_sampler, pin.uv).r);
-    float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), inv_view_proj);
+    float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), PC.inv_view_proj);
     WorldSpacePos.xyz /= WorldSpacePos.w;
 
     float3 N = t_gbuffer_normal.Sample(linear_sampler, pin.uv).rgb * 2.0 - 1.0;
-    float3 V = normalize(camera_pos - WorldSpacePos.xyz);
+    float3 V = normalize(PC.camera_pos - WorldSpacePos.xyz);
     float3 L = normalize(-light_direction);
 
     WorldSpacePos.w = 1.0f;

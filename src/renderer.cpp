@@ -136,11 +136,8 @@ namespace feng
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
 
-        if (scene.DirectionalLight)
-            directional_light_effect_->Draw(*this, scene, command_list, idx);
-
-        if (scene.SpotLights.size() > 0)
-            spot_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.DirectionalLight) directional_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.SpotLights.size() > 0) spot_light_effect_->Draw(*this, scene, command_list, idx);
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

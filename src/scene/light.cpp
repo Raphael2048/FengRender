@@ -93,4 +93,11 @@ namespace feng
         XMVECTOR v2 = XMLoadFloat4(&RotateY180);
         XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionMultiply(v2, v));
     }
+
+    SkyLight::SkyLight(const std::wstring &path, float intensity)
+        : Node(Vector3::Zero, Vector3::Zero, Vector3::One), path_(path), intensity_(intensity)
+    {
+        
+    }
+
 } // namespace feng

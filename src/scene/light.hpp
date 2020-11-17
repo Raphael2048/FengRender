@@ -59,6 +59,26 @@ namespace feng
         float radius_;
         float inner_angle_;
         float outer_angle_;
-        bool cast_shadow_;
+    };
+ 
+    class PointLight : Node
+    {
+    public:
+        friend class PointLightEffect;
+        PointLight(const Vector3& position, const Color& color, float radius);
+    private:
+        // 单位 (W/sr) or (cd)
+        Color color_;
+        float radius_;
+    };
+
+    class SkyLight : Node
+    {
+    public:
+        friend class SkyLightEffect;
+        SkyLight(const std::wstring& path, float intensity);
+    private:
+        std::wstring path_;
+        float intensity_;
     };
 } // namespace feng

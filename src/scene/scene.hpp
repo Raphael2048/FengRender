@@ -11,6 +11,7 @@ namespace feng
     public:
         void SetCamera(Camera *camera) { Camera.reset(camera); }
         void SetDirectionalLight(DirectionalLight *light) { DirectionalLight.reset(light); }
+        void SetSkyLight(SkyLight *light) { SkyLight.reset(light); }
         void AddStaticMesh(StaticMesh *mesh) { StaticMeshes.emplace_back(mesh); }
         void AddSpotLight(SpotLight *light) { SpotLights.emplace_back(light); }
         void Init()
@@ -57,6 +58,7 @@ namespace feng
         std::unique_ptr<Camera> Camera;
 
         std::unique_ptr<DirectionalLight> DirectionalLight;
+        std::unique_ptr<SkyLight> SkyLight;
         std::vector<std::unique_ptr<SpotLight>> SpotLights;
 
         std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;
