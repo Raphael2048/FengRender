@@ -112,7 +112,7 @@ float4 PS(VertexOut pin) : SV_Target
 #endif
     }
 
-    float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color ;
+    float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color.xyz;
 
 #ifdef DEBUG
     return float4(ndc[0].z, ndc[1].z, ndc[2].z, 0.0f) * multiper ;

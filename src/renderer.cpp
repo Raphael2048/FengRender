@@ -40,12 +40,12 @@ namespace feng
         pp_input_layout_ = {layout.data(), static_cast<UINT>(layout.size())};
         // 后处理输入的点位置和UV
         Vector2 points[] = {{-1.0f, 3.0f}, {0.0f, -1.0f}, {3.0f, -1.0f}, {2.0f, 1.0f}, {-1.0f, -1.0f}, {0.0f, 1.0f}};
-        pp_vertex_buffer_ = std::make_unique<Buffer>(device_->GetDevice(), uploader, points, 3, sizeof(Vector2) * 2);
+        pp_vertex_buffer_ = std::make_unique<StaticBuffer>(device_->GetDevice(), uploader, points, 3, sizeof(Vector2) * 2);
         pp_vertex_buffer_view_ = {pp_vertex_buffer_->GetGPUAddress(), sizeof(Vector2) * 6, sizeof(Vector2) * 2};
 
         std::shared_ptr<StaticTexture> skylight_cubemap;
         if (scene.SkyLight)
-            skylight_cubemap = std::make_shared<StaticTexture>(GetDevice(), uploader, scene.SkyLight->GetTexturePath());
+            skylight_cubemap = std::make_shared<StaticTexture>(GetDevice(), uploader, scene.SkyLight->GetTexturePath(), true, true);
 
         auto ending_event = uploader.End(device_->GetCommandQueue());
         device_->Signal(0);
@@ -53,6 +53,9 @@ namespace feng
         ending_event.wait();
 
         auto command_list = GetDevice().BeginCommand(0);
+        ID3D12DescriptorHeap *heaps[] = {device_->GetSRVHeap().Heap()};
+        command_list->SetDescriptorHeaps(1, heaps);
+
         // 这里GPU地址是连续的, 直接用range表示
         t_gbuffer_base_color_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
@@ -70,7 +73,7 @@ namespace feng
         if (scene.SpotLights.size() > 0)
             spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
         if (scene.SkyLight)
-            sky_light_effect_.reset(new SkyLightEffect(skylight_cubemap, *this));
+            sky_light_effect_.reset(new SkyLightEffect(skylight_cubemap, *this, command_list));
 
         GetDevice().EndCommand();
         GetDevice().FlushCommand(0);

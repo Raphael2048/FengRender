@@ -6,8 +6,9 @@
 
 namespace feng
 {
-    StaticTexture::StaticTexture(Device &device, DirectX::ResourceUploadBatch &uploader, const std::wstring &path, bool srgb)
+    StaticTexture::StaticTexture(Device &device, DirectX::ResourceUploadBatch &uploader, const std::wstring &path, bool srgb, bool cubemap)
     {
+        device_ = &device;
         DirectX::DDS_LOADER_FLAGS flags = DirectX::DDS_LOADER_DEFAULT;
         if (srgb)
         {
@@ -17,9 +18,17 @@ namespace feng
             device.GetDevice(), uploader, path.data(), 0, D3D12_RESOURCE_FLAG_NONE, flags,
             buffer_.GetAddressOf(), nullptr, nullptr);
         srv_heap_index_ = device.GetSRVAllocIndex();
-        DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
+        DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSRVHeap().GetCpuHandle(srv_heap_index_), cubemap);
     }
 
+    D3D12_CPU_DESCRIPTOR_HANDLE StaticTexture::GetCPUSRV()
+    {
+        return device_->GetSRVHeap().GetCpuHandle(srv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE StaticTexture::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
     //std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> StaticMaterial::textures_{};
 
     StaticMaterial::StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness_, const std::wstring &metallic)

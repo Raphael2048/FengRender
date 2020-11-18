@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dx12/dx12_device.hpp"
-#include "dx12/dx12_constant_buffer.hpp"
 #include "dx12/dx12_render_target.hpp"
 #include "dx12/dx12_dyncmic_texture.hpp"
 #include "dx12/dx12_buffer.hpp"
@@ -61,7 +60,7 @@ namespace feng
         // PostProcessing InputLayout
         D3D12_INPUT_LAYOUT_DESC pp_input_layout_;
         // PostProcessing VertexData
-        std::unique_ptr<Buffer> pp_vertex_buffer_;
+        std::unique_ptr<StaticBuffer> pp_vertex_buffer_;
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
 
     private:

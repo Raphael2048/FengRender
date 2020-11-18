@@ -14,7 +14,7 @@ namespace feng
     class GraphicsShader : public Shader
     {
     public:
-        GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines);
+        GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines = nullptr);
         void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
     private:
         ComPtr<ID3DBlob> vs_bytes_;
@@ -24,7 +24,7 @@ namespace feng
     class ComputeShader : public Shader
     {
     public:
-        ComputeShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines);
+        ComputeShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines = nullptr);
         void FillPSO(D3D12_COMPUTE_PIPELINE_STATE_DESC& desc);
     private:
         ComPtr<ID3DBlob> cs_bytes_;

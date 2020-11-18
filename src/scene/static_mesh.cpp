@@ -26,8 +26,8 @@ namespace feng
     {
         if (!inited_)
         {
-            vertex_buffer_.reset(new Buffer(device.GetDevice(), uploader, vertex_buffer_cpu_->GetBufferPointer(), vertex_count_, sizeof(Vertex)));
-            index_buffer_.reset(new Buffer(device.GetDevice(), uploader, index_buffer_cpu_->GetBufferPointer(), index_count_, sizeof(uint32_t)));
+            vertex_buffer_.reset(new StaticBuffer(device.GetDevice(), uploader, vertex_buffer_cpu_->GetBufferPointer(), vertex_count_, sizeof(Vertex)));
+            index_buffer_.reset(new StaticBuffer(device.GetDevice(), uploader, index_buffer_cpu_->GetBufferPointer(), index_count_, sizeof(uint32_t)));
             inited_ = true;
         }
     }

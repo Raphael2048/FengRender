@@ -99,7 +99,7 @@ float4 PS(VertexOut pin) : SV_Target
     }
     intensity *= falloff_k;
 
-    float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color ;
+    float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color.xyz ;
     
     return float4(output * intensity * multiper, 0.0f);
 }

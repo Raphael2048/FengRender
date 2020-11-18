@@ -106,4 +106,5 @@ float GetSHCoffient(int index, float3 direction)
             return 0.5462742152960396 * (x*x - z*z);
             break;
     }
+    return 0.0f;
 }

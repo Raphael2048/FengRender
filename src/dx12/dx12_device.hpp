@@ -59,7 +59,7 @@ namespace feng
         size_t dsv_alloc_index_ = 0;
 
         std::vector<ComPtr<ID3D12CommandAllocator>> command_allocators_;
-        ComPtr<ID3D12GraphicsCommandList> command_list_;
+        ComPtr<ID3D12GraphicsCommandList4> command_list_;
         std::vector<Fence *> fences_;
     };
 } // namespace feng

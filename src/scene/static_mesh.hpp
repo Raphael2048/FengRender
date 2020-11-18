@@ -21,8 +21,8 @@ namespace feng
     public:
         ComPtr<ID3DBlob> vertex_buffer_cpu_;
         ComPtr<ID3DBlob> index_buffer_cpu_;
-        std::unique_ptr<Buffer> vertex_buffer_;
-        std::unique_ptr<Buffer> index_buffer_;
+        std::unique_ptr<StaticBuffer> vertex_buffer_;
+        std::unique_ptr<StaticBuffer> index_buffer_;
         Vector3 min_;
         Vector3 max_;
         UINT vertex_count_;

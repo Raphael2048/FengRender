@@ -8,11 +8,15 @@ namespace feng
     class StaticTexture
     {
     public:
-        StaticTexture(Device &device, DirectX::ResourceUploadBatch &uplaoder, const std::wstring &path, bool srgb = false);
+        StaticTexture(Device &device, DirectX::ResourceUploadBatch &uplaoder, const std::wstring &path, bool srgb = false, bool cubemap = false);
         size_t GetSRVIndex() {return srv_heap_index_; };
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPUSRV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        ID3D12Resource* GetBuffer() {return buffer_.Get(); }
     protected:
         ComPtr<ID3D12Resource> buffer_;
         size_t srv_heap_index_;
+        Device* device_;
     };
 
     class StaticMaterial

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dx12/dx12_dyncmic_texture.hpp"
-#include "dx12/dx12_constant_buffer.hpp"
+#include "dx12/dx12_buffer.hpp"
 #include "render/depth_only.hpp"
 #include "render/spot_light_effect.hpp"
 namespace feng
