@@ -27,14 +27,6 @@ namespace feng
         TRY(device_->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&direct_queue_)));
         direct_queue_->SetName(L"Direct Queue");
 
-        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-        TRY(device_->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&compute_queue_)));
-        compute_queue_->SetName(L"Compute Queue");
-
-        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-        TRY(device_->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&copy_queue_)));
-        copy_queue_->SetName(L"Copy Queue");
-
         // TRY(device_->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocator_)));
 
         command_allocators_.resize(BACK_BUFFER_SIZE);
@@ -80,13 +72,13 @@ namespace feng
 
     void Device::FlushCommand(uint8_t idx)
     {
-        fences_[idx]->Signal(direct_queue_);
+        fences_[idx]->Signal(direct_queue_.Get());
         fences_[idx]->Wait();
     }
 
     void Device::Signal(uint8_t idx)
     {
-        fences_[idx]->Signal(direct_queue_);
+        fences_[idx]->Signal(direct_queue_.Get());
     }
 
     void Device::Wait(uint8_t idx)

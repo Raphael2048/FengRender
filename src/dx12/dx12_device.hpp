@@ -12,9 +12,9 @@ namespace feng
 
         ID3D12Device *GetDevice() const { return device_.Get(); }
 
-        IDXGIFactory6 *GetFactory() const { return factory_; }
+        IDXGIFactory6 *GetFactory() const { return factory_.Get(); }
 
-        ID3D12CommandQueue *GetCommandQueue() const { return direct_queue_; }
+        ID3D12CommandQueue *GetCommandQueue() const { return direct_queue_.Get(); }
 
         ID3D12GraphicsCommandList* BeginCommand(uint8_t index, ID3D12PipelineState* pso = nullptr);
 
@@ -40,14 +40,12 @@ namespace feng
 
     private:
         ComPtr<ID3D12Device> device_;
-        IDXGIFactory6 *factory_;
+        ComPtr<IDXGIFactory6> factory_;
 
-        ID3D12Debug1 *debug_ = nullptr;
-        ID3D12InfoQueue *_queue;
+        ComPtr<ID3D12Debug1> debug_;
+        ComPtr<ID3D12InfoQueue> _queue;
 
-        ID3D12CommandQueue *direct_queue_;
-        ID3D12CommandQueue *compute_queue_;
-        ID3D12CommandQueue *copy_queue_;
+        ComPtr<ID3D12CommandQueue> direct_queue_;
 
         // Heap for SRV
         std::unique_ptr<DirectX::DescriptorHeap> srv_heap_;

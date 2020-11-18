@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dx12/dx12_dyncmic_texture.hpp"
+#include "dx12/dx12_static_texture.hpp"
 #include "dx12/dx12_constant_buffer.hpp"
 #include "render/depth_only.hpp"
 #include "render/spot_light_effect.hpp"
@@ -14,23 +15,12 @@ namespace feng
     class SkyLightEffect
     {
     public:
-        SkyLightEffect(DirectX::ResourceUploadBatch& uploader, Renderer &renderer, const Scene &scene);
+        SkyLightEffect(std::shared_ptr<StaticTexture> texture, Renderer &renderer);
 
         void Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList *command_list, uint8_t idx);
 
     private:
-        struct SpotLightBuffer
-        {
-            Matrix ShadowMatrix;
-            Vector3 LightPosition;
-            float Radius;
-            Vector3 LightDirection;
-            float ShadowMapSize;
-            Color Color;
-            float InnerFalloff;
-            float OuterFalloff;
-        };
-
+        std::shared_ptr<StaticTexture> cubemap_;
         // For shadowmap generation
         // 512*512
         std::unique_ptr<DynamicTexture> t_irradiance;
@@ -42,6 +32,5 @@ namespace feng
         // For lighting
         ComPtr<ID3D12RootSignature> light_pass_signature_;
         ComPtr<ID3D12PipelineState> light_pass_pso_;
-        std::unique_ptr<ConstantBufferGroup<SpotLightBuffer, BACK_BUFFER_SIZE>> light_info_buffer_;
     };
 } // namespace feng

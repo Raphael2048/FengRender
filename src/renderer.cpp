@@ -43,11 +43,16 @@ namespace feng
         pp_vertex_buffer_ = std::make_unique<Buffer>(device_->GetDevice(), uploader, points, 3, sizeof(Vector2) * 2);
         pp_vertex_buffer_view_ = {pp_vertex_buffer_->GetGPUAddress(), sizeof(Vector2) * 6, sizeof(Vector2) * 2};
 
+        std::shared_ptr<StaticTexture> skylight_cubemap;
+        if (scene.SkyLight)
+            skylight_cubemap = std::make_shared<StaticTexture>(GetDevice(), uploader, scene.SkyLight->GetTexturePath());
+
         auto ending_event = uploader.End(device_->GetCommandQueue());
         device_->Signal(0);
         device_->Wait(0);
         ending_event.wait();
 
+        auto command_list = GetDevice().BeginCommand(0);
         // 这里GPU地址是连续的, 直接用range表示
         t_gbuffer_base_color_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
         t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
@@ -64,6 +69,11 @@ namespace feng
             directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
         if (scene.SpotLights.size() > 0)
             spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
+        if (scene.SkyLight)
+            sky_light_effect_.reset(new SkyLightEffect(skylight_cubemap, *this));
+
+        GetDevice().EndCommand();
+        GetDevice().FlushCommand(0);
     }
 
     void Renderer::Draw(Scene &scene)
@@ -117,7 +127,7 @@ namespace feng
             if (scene.StaticMeshesVisibity[dis])
                 RefreshConstantBuffer(*(it->get()), idx, dis);
         }
-        auto command_list = GetDevice().BeginCommand(idx, nullptr);
+        auto command_list = GetDevice().BeginCommand(idx);
 
         ID3D12DescriptorHeap *heaps[] = {device_->GetSRVHeap().Heap()};
         command_list->SetDescriptorHeaps(1, heaps);
@@ -136,8 +146,10 @@ namespace feng
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
 
-        if (scene.DirectionalLight) directional_light_effect_->Draw(*this, scene, command_list, idx);
-        if (scene.SpotLights.size() > 0) spot_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.DirectionalLight)
+            directional_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.SpotLights.size() > 0)
+            spot_light_effect_->Draw(*this, scene, command_list, idx);
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

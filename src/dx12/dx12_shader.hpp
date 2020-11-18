@@ -9,8 +9,7 @@ namespace feng
     class Shader
     {
     public:
-        static ComPtr<ID3D12RootSignature> CreateRootSignature(ID3D12Device* device, const CD3DX12_ROOT_SIGNATURE_DESC& desc);
-        // virtual void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC desc);
+        static ComPtr<ID3DBlob> CompileShader(const std::wstring &filename, const D3D_SHADER_MACRO *defines, const std::string &entrypoint, const std::string &target);
     };
     class GraphicsShader : public Shader
     {
@@ -18,13 +17,17 @@ namespace feng
         GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines);
         void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
     private:
-        static ID3DBlob* CompileShader(const std::wstring &filename, const D3D_SHADER_MACRO *defines, const std::string &entrypoint, const std::string &target);
-        ID3DBlob *vs_bytes_ = nullptr;
-        ID3DBlob *ps_bytes_ = nullptr;
+        ComPtr<ID3DBlob> vs_bytes_;
+        ComPtr<ID3DBlob> ps_bytes_;
     };
 
-    // class ComputeShader : public Shader
-    // {
-    // };
+    class ComputeShader : public Shader
+    {
+    public:
+        ComputeShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines);
+        void FillPSO(D3D12_COMPUTE_PIPELINE_STATE_DESC& desc);
+    private:
+        ComPtr<ID3DBlob> cs_bytes_;
+    };
 
 } // namespace feng

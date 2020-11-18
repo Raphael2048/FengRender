@@ -77,6 +77,10 @@ namespace feng
     public:
         friend class SkyLightEffect;
         SkyLight(const std::wstring& path, float intensity);
+        const std::wstring& GetTexturePath()
+        {
+            return path_;
+        }
     private:
         std::wstring path_;
         float intensity_;
