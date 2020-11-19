@@ -148,7 +148,7 @@ namespace feng
             std::vector<bool> visibile;
             visibile.resize(scene.StaticMeshes.size());
             t_shadow_split[i]->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-            auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(t_shadow_split[i]->GetDSVHeapIndex());
+            auto depth_descriptor = t_shadow_split[i]->GetCPUDSV();
             command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
             command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
             if (WorldSpaceBoundingBox.Intersects(scene.StaticMeshesOctree->GetRootBounds()))

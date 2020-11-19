@@ -55,7 +55,7 @@ namespace feng
 
         renderer.t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
-        auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(renderer.t_depth_->GetDSVHeapIndex());
+        auto depth_descriptor = renderer.t_depth_->GetCPUDSV();
         
         command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
         command_list->ClearDepthStencilView( depth_descriptor

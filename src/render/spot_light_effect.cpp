@@ -85,7 +85,7 @@ namespace feng
                 visibile.resize(scene.StaticMeshes.size());
                 
                 t_shadowmaps[index]->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-                auto depth_descriptor = renderer.GetDevice().GetDSVHeap().GetCpuHandle(t_shadowmaps[index]->GetDSVHeapIndex());
+                auto depth_descriptor = t_shadowmaps[index]->GetCPUDSV();
                 command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
                 command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
                 auto &WorldSpaceBoundingBox = spotLight.GetBoundingBox();

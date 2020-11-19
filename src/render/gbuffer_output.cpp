@@ -63,7 +63,7 @@ namespace feng
         renderer.t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
         renderer.t_gbuffer_normal->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
         renderer.t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
-        
+
         // continus render target handle address
         auto base_rtv = renderer.t_gbuffer_base_color_->GetCPURTV();
         auto depth_dsv = renderer.t_depth_->GetCPUDSV();
@@ -71,18 +71,14 @@ namespace feng
 
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(
-            renderer.GetDevice().GetRTVHeap().GetCpuHandle(renderer.t_gbuffer_base_color_->GetRTVHeapIndex()),
-            colors, 1, &renderer.scissor_rect_
-        );
+            renderer.t_gbuffer_base_color_->GetCPURTV(),
+            colors, 1, &renderer.scissor_rect_);
         command_list->ClearRenderTargetView(
-            renderer.GetDevice().GetRTVHeap().GetCpuHandle(renderer.t_gbuffer_normal->GetRTVHeapIndex()),
-            colors, 1, &renderer.scissor_rect_
-        );
+            renderer.t_gbuffer_normal->GetCPURTV(),
+            colors, 1, &renderer.scissor_rect_);
         command_list->ClearRenderTargetView(
-            renderer.GetDevice().GetRTVHeap().GetCpuHandle(renderer.t_gbuffer_roughness_metallic_->GetRTVHeapIndex()),
-            colors, 1, &renderer.scissor_rect_
-        );
-
+            renderer.t_gbuffer_roughness_metallic_->GetCPURTV(),
+            colors, 1, &renderer.scissor_rect_);
 
         command_list->SetGraphicsRootConstantBufferView(2, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         ConstantBuffer<ObjectConstantBuffer> &object_buffer = renderer.object_constant_buffer_->operator[](idx);

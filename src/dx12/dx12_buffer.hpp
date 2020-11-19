@@ -47,6 +47,10 @@ namespace feng
                 IID_PPV_ARGS(&resource_));
             gpu_address_ = resource_->GetGPUVirtualAddress();
         }
+        ID3D12Resource* GetResource()
+        {
+            return resource_.Get();
+        }
         D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress()
         {
             return gpu_address_;

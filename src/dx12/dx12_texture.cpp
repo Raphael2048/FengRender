@@ -5,7 +5,7 @@
 namespace feng
 {
 
-     StaticTexture::StaticTexture(Device &device, DirectX::ResourceUploadBatch &uploader, const std::wstring &path, bool srgb, bool cubemap)
+    StaticTexture::StaticTexture(Device &device, DirectX::ResourceUploadBatch &uploader, const std::wstring &path, bool srgb, bool cubemap)
     {
         device_ = &device;
         DirectX::DDS_LOADER_FLAGS flags = DirectX::DDS_LOADER_DEFAULT;
@@ -20,10 +20,6 @@ namespace feng
         DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSRVHeap().GetCpuHandle(srv_heap_index_), cubemap);
     }
 
-    D3D12_CPU_DESCRIPTOR_HANDLE StaticTexture::GetCPUSRV()
-    {
-        return device_->GetSRVHeap().GetCpuHandle(srv_heap_index_);
-    }
     D3D12_GPU_DESCRIPTOR_HANDLE StaticTexture::GetGPUSRV()
     {
         return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
@@ -49,7 +45,7 @@ namespace feng
     }
 
     DynamicTexture::DynamicTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
-    :device_(&device)
+        : device_(&device)
     {
         bool is_depth = write_format == DXGI_FORMAT_D32_FLOAT || write_format == DXGI_FORMAT_D24_UNORM_S8_UINT ||
                         write_format == DXGI_FORMAT_D16_UNORM || write_format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
@@ -135,22 +131,15 @@ namespace feng
         current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
     }
 
-    DynamicTexture::DynamicTexture(Device& device, UINT64 width, UINT64 height, DXGI_FORMAT unified_format):
-        DynamicTexture(device, width, height, unified_format, unified_format, unified_format){}
+    DynamicTexture::DynamicTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT unified_format) : DynamicTexture(device, width, height, unified_format, unified_format, unified_format) {}
 
-
-
-    void DynamicTexture::TransitionState(ID3D12GraphicsCommandList* command, D3D12_RESOURCE_STATES state)
+    void DynamicTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
     {
-        if(state == current_state_) return;
+        if (state == current_state_)
+            return;
         auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
         command->ResourceBarrier(1, &transition);
         current_state_ = state;
-    }
-
-    D3D12_CPU_DESCRIPTOR_HANDLE DynamicTexture::GetCPUSRV()
-    {
-        return device_->GetSRVHeap().GetCpuHandle(srv_heap_index_);
     }
     D3D12_CPU_DESCRIPTOR_HANDLE DynamicTexture::GetCPURTV()
     {
@@ -165,12 +154,21 @@ namespace feng
     {
         return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
     }
-    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPURTV()
+
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUUAV()
     {
-        return device_->GetRTVHeap().GetGpuHandle(rtv_heap_index_);
-    }
-    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUDSV()
-    {
-        return device_->GetDSVHeap().GetGpuHandle(dsv_heap_index_);
+        if (uav_heap_index_ == -1)
+        {
+            uav_heap_index_ = device_->GetSRVAllocIndex();
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Format = buffer_->GetDesc().Format;
+            uavDesc.Texture2D.MipSlice = 0;
+            uavDesc.Texture2D.PlaneSlice = 0;
+            device_->GetDevice()->CreateUnorderedAccessView(
+                buffer_.Get(), nullptr, &uavDesc,
+                device_->GetSRVHeap().GetCpuHandle(uav_heap_index_));
+        }
+        return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_);
     }
 } // namespace feng
