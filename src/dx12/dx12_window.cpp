@@ -1,4 +1,4 @@
-#include "dx12/dx12_render_target.hpp"
+#include "dx12/dx12_window.hpp"
 #include "window.hpp"
 #include "dx12/dx12_device.hpp"
 #include "d3dx12.h"

@@ -1,8 +1,53 @@
-#include "dx12/dx12_dyncmic_texture.hpp"
+#include "dx12/dx12_texture.hpp"
 #include "dx12/dx12_device.hpp"
 #include "d3dx12.h"
+#include "DirectXHelpers.h"
 namespace feng
 {
+
+     StaticTexture::StaticTexture(Device &device, DirectX::ResourceUploadBatch &uploader, const std::wstring &path, bool srgb, bool cubemap)
+    {
+        device_ = &device;
+        DirectX::DDS_LOADER_FLAGS flags = DirectX::DDS_LOADER_DEFAULT;
+        if (srgb)
+        {
+            flags = flags | DirectX::DDS_LOADER_FORCE_SRGB;
+        }
+        DirectX::CreateDDSTextureFromFileEx(
+            device.GetDevice(), uploader, path.data(), 0, D3D12_RESOURCE_FLAG_NONE, flags,
+            buffer_.GetAddressOf(), nullptr, nullptr);
+        srv_heap_index_ = device.GetSRVAllocIndex();
+        DirectX::CreateShaderResourceView(device.GetDevice(), buffer_.Get(), device.GetSRVHeap().GetCpuHandle(srv_heap_index_), cubemap);
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE StaticTexture::GetCPUSRV()
+    {
+        return device_->GetSRVHeap().GetCpuHandle(srv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE StaticTexture::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
+    //std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> StaticMaterial::textures_{};
+
+    StaticMaterial::StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness_, const std::wstring &metallic)
+        : base_color_path_(base_color), normal_path_(normal), roughness_path_(roughness_), metallic_path_(metallic)
+    {
+    }
+
+    void StaticMaterial::Init(Device &device, DirectX::ResourceUploadBatch &uploader)
+    {
+        if (inited_)
+            return;
+        inited_ = true;
+        // Coherent SRVS
+        base_color_ = std::make_shared<StaticTexture>(device, uploader, base_color_path_, true);
+        first_index_ = base_color_->GetSRVIndex();
+        normal_ = std::make_shared<StaticTexture>(device, uploader, normal_path_);
+        roughness_ = std::make_shared<StaticTexture>(device, uploader, roughness_path_);
+        metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);
+    }
+
     DynamicTexture::DynamicTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
     :device_(&device)
     {

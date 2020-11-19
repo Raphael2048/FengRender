@@ -2,7 +2,7 @@
 
 #include "scene/node.hpp"
 #include "dx12/dx12_buffer.hpp"
-#include "dx12/dx12_static_texture.hpp"
+#include "dx12/dx12_texture.hpp"
 namespace feng
 {
     struct Vertex

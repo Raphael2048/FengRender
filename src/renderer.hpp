@@ -1,8 +1,8 @@
 #pragma once
 
 #include "dx12/dx12_device.hpp"
-#include "dx12/dx12_render_target.hpp"
-#include "dx12/dx12_dyncmic_texture.hpp"
+#include "dx12/dx12_window.hpp"
+#include "dx12/dx12_texture.hpp"
 #include "dx12/dx12_buffer.hpp"
 #include "scene/camera.hpp"
 #include "render/depth_only.hpp"

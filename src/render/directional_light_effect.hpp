@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dx12/dx12_dyncmic_texture.hpp"
+#include "dx12/dx12_texture.hpp"
 #include "dx12/dx12_buffer.hpp"
 #include "render/depth_only.hpp"
 namespace feng
