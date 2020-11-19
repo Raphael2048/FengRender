@@ -8,7 +8,7 @@ namespace feng
 {
     class Device;
     class CommandList;
-    class StaticBuffer
+    class StaticBuffer : public Uncopyable
     {
     public:
         StaticBuffer(ID3D12Device *device, DirectX::ResourceUploadBatch &uploader, void *data, size_t count, size_t stride)
@@ -28,7 +28,7 @@ namespace feng
         D3D12_GPU_VIRTUAL_ADDRESS gpu_address_;
     };
 
-    class UAVBuffer
+    class UAVBuffer : public Uncopyable
     {
     public:
         UAVBuffer(ID3D12Device *device, size_t count, size_t stride)

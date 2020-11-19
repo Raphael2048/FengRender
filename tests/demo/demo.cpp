@@ -11,7 +11,7 @@ protected:
         Root->SetCamera(new Camera(Vector3{10, 50, 20}, Vector3{0, 0, 0}, 1.0f, 300.0f, 60.0f, 1280.0f / 720.0f));
 
         Root->SetDirectionalLight(new DirectionalLight(Vector3(-2, -10, 5), Color(3, 2, 2)));
-        Root->SetSkyLight(new SkyLight(L"resources\\textures\\cubemap.dds", 1));
+        Root->SetSkyLight(new SkyLight(L"resources\\textures\\cubemap.dds", 0.2));
 
         Root->AddSpotLight(new SpotLight( Vector3(0, 50, 0), Vector3(1, -1, 0), Color(1, 1, 2) *3, 200, 10, 45));
         Root->AddSpotLight(new SpotLight( Vector3(0, 50, 50), Vector3(1, -1, -0), Color(1, 2, 1) , 200, 0, 30));
@@ -42,12 +42,12 @@ protected:
                 material));
         }
 
-        // Root->AddStaticMesh(new StaticMesh(
-        //     Vector3(40, 40, 40),
-        //     Vector3(20, 10, 0),
-        //     Vector3(5, 5, 5),
-        //     sphere[0],
-        //     material));
+        Root->AddStaticMesh(new StaticMesh(
+            Vector3(40, 40, 40),
+            Vector3(20, 10, 0),
+            Vector3(5, 5, 5),
+            sphere[0],
+            material_rock));
 
         // Root->AddStaticMesh(new StaticMesh(
         //                 Vector3(20, 20, 20),

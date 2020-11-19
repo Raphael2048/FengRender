@@ -62,7 +62,6 @@ namespace feng
         // PostProcessing VertexData
         std::unique_ptr<StaticBuffer> pp_vertex_buffer_;
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
-
     private:
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;

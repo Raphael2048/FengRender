@@ -26,5 +26,9 @@ namespace feng
         ComPtr<ID3D12RootSignature> sh_sigature_;
         ComPtr<ID3D12PipelineState> sh_pipeline;
         std::unique_ptr<UAVBuffer> sh_buffer_;
+
+        //光照渲染
+        ComPtr<ID3D12RootSignature> light_signature_;
+        ComPtr<ID3D12PipelineState> light_pipeline_;
     };
 } // namespace feng

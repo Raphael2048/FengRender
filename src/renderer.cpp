@@ -153,6 +153,8 @@ namespace feng
             directional_light_effect_->Draw(*this, scene, command_list, idx);
         if (scene.SpotLights.size() > 0)
             spot_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.SkyLight)
+            sky_light_effect_->Draw(*this, scene, command_list, idx);
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

@@ -139,7 +139,7 @@ namespace feng
             currentFrustum.Far = distances[i + 1];
             if (WorldSpaceBoundingBox.Contains(currentFrustum) != ContainmentType::CONTAINS)
             {
-                FMSG("HAHA");
+                FMSG("OOOOPS!");
             }
 
             BoundingOrientedBox WorldSpaceOBB(WorldSpaceBoundingBox.Center, LightSpaceBoundingBox.Extents, Vector4());
