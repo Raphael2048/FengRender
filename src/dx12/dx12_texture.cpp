@@ -38,7 +38,6 @@ namespace feng
         inited_ = true;
         // Coherent SRVS
         base_color_ = std::make_shared<StaticTexture>(device, uploader, base_color_path_, true);
-        first_index_ = base_color_->GetSRVIndex();
         normal_ = std::make_shared<StaticTexture>(device, uploader, normal_path_);
         roughness_ = std::make_shared<StaticTexture>(device, uploader, roughness_path_);
         metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);

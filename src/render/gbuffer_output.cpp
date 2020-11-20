@@ -90,7 +90,7 @@ namespace feng
             if (scene.StaticMeshesVisibity[dis])
             {
                 command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
-                command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(it->get()->material_->first_index_));
+                command_list->SetGraphicsRootDescriptorTable(0, it->get()->material_->base_color_->GetGPUSRV());
                 it->get()->DrawWithCommand(command_list);
             }
         }

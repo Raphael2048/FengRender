@@ -28,8 +28,7 @@ namespace feng
 
         //镜面反射cubemap积分
         ComPtr<ID3D12Resource> specular_resource_;
-        std::vector<int> specular_rtv_indexs_; // 8*5 = 40个
-        std::vector<int> specular_srv_indexs_; // 7个
+        int rtv_heap_begin;
         int specular_final_srv_index_;
         ComPtr<ID3D12RootSignature> specular_sigature_;
         ComPtr<ID3D12PipelineState> specular_pipeline_;

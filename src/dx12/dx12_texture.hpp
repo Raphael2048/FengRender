@@ -24,7 +24,6 @@ namespace feng
         StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness, const std::wstring &metallic);
         void Init(Device &device, DirectX::ResourceUploadBatch &uploader);
         std::shared_ptr<StaticTexture> base_color_, normal_, roughness_, metallic_;
-        size_t first_index_;
 
     private:
         std::wstring base_color_path_, normal_path_, roughness_path_, metallic_path_;

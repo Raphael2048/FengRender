@@ -47,13 +47,23 @@ namespace feng
                 IID_PPV_ARGS(&resource_));
             gpu_address_ = resource_->GetGPUVirtualAddress();
         }
-        ID3D12Resource* GetResource()
+        ID3D12Resource *GetResource()
         {
             return resource_.Get();
         }
         D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress()
         {
             return gpu_address_;
+        }
+        void AsSRV(ID3D12GraphicsCommandList *command)
+        {
+            auto transition = CD3DX12_RESOURCE_BARRIER::Transition(resource_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            command->ResourceBarrier(1, &transition);
+        }
+        void AsUAV(ID3D12GraphicsCommandList *command)
+        {
+            auto transition = CD3DX12_RESOURCE_BARRIER::Transition(resource_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            command->ResourceBarrier(1, &transition);
         }
 
     private:

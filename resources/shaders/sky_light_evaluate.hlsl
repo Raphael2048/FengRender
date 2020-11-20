@@ -5,6 +5,7 @@ Texture2D t_gbuffer_normal : register(t1);
 Texture2D<float2> t_gbuffer_roghness_metallic : register(t2);
 Texture2D<float> t_depth : register(t3);
 StructuredBuffer<ThreeOrderSH> SH : register(t4);
+TextureCube t_specular_prefilter : register(t5);
 
 cbuffer LightIntensity : register(b0)
 {
@@ -46,13 +47,17 @@ float4 PS(VertexOut pin) : SV_Target
 
     float3 N = t_gbuffer_normal.Sample(linear_sampler, pin.uv).rgb * 2.0 - 1.0;
 
+
     //一种优化方案是存储预计算后的系数, 可参考StupiedSH AppendixA10
     ThreeOrderSH basis =  GetThreeOrderSHBasis(N);
     float DiffuseR = DotSH3(basis, SH[0]);
     float DiffuseG = DotSH3(basis, SH[1]);
     float DiffuseB = DotSH3(basis, SH[2]);
     float3 diffuse = float3(DiffuseR, DiffuseG, DiffuseB) * Intensity * BaseColor;
-    return float4(diffuse, 1);
+
+    float3 SPE = t_specular_prefilter.Sample(linear_sampler, N).rgb;
+    
+    return float4(diffuse + SPE * 0.00001f, 1);
 }
 
 
