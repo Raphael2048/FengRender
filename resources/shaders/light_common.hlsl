@@ -11,7 +11,7 @@ struct PassConstant
 
 static const float PI = 3.14159265359;
 
-// N 法线分布项
+// D 法线分布项
 float DistributionGGX(float NdotH, float roughness)
 {
     float a = roughness*roughness;

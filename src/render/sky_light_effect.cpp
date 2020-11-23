@@ -36,6 +36,8 @@ namespace feng
             command_list->SetComputeRootUnorderedAccessView(1, sh_buffer_->GetGPUAddress());
             command_list->Dispatch(1, 1, 1);
             sh_buffer_->AsSRV(command_list);
+            auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(texture->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            command_list->ResourceBarrier(1, &transition2);
         }
         {
             auto light_shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\sky_light_specular.hlsl");
@@ -89,18 +91,12 @@ namespace feng
                 IID_PPV_ARGS(&specular_resource_)));
 
             Matrix ViewMatrixs[6];
-            ViewMatrixs[0] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Right, Vector3::Forward);
-            ViewMatrixs[1] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Left, Vector3::Forward);
-            ViewMatrixs[2] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Up, Vector3::Forward);
-            ViewMatrixs[3] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Down, Vector3::Forward);
-            ViewMatrixs[4] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Backward, Vector3::Up);
-            ViewMatrixs[5] = Matrix::CreateLookAt(
-                Vector3::Zero, Vector3::Forward, Vector3::Up);
+            ViewMatrixs[0] = Matrix::CreateLookAt(Vector3::Right, Vector3::Zero, Vector3::Up).Invert();
+            ViewMatrixs[1] = Matrix::CreateLookAt(Vector3::Left, Vector3::Zero, Vector3::Up).Invert();
+            ViewMatrixs[2] = Matrix::CreateLookAt(Vector3::Up, Vector3::Zero, Vector3::Forward).Invert();
+            ViewMatrixs[3] = Matrix::CreateLookAt(Vector3::Down, Vector3::Zero, Vector3::Backward).Invert();
+            ViewMatrixs[4] = Matrix::CreateLookAt(Vector3::Backward, Vector3::Zero, Vector3::Up).Invert();
+            ViewMatrixs[5] = Matrix::CreateLookAt(Vector3::Forward, Vector3::Zero, Vector3::Up).Invert();
 
             command_list->SetPipelineState(specular_pipeline_.Get());
             command_list->SetGraphicsRootSignature(specular_sigature_.Get());
@@ -108,6 +104,16 @@ namespace feng
             auto srv_handle = texture->GetGPUSRV();
             for (int mip = 0; mip < 5; ++mip)
             {
+                D3D12_VIEWPORT viewport;
+                viewport.TopLeftX = 0;
+                viewport.TopLeftY = 0;
+                viewport.Width = 128 >> mip;
+                viewport.Height = 128 >> mip;
+                viewport.MinDepth = 0.0f;
+                viewport.MaxDepth = 1.0f;
+                command_list->RSSetViewports(1, &viewport);
+                D3D12_RECT rect = {0, 0, 128 >> mip, 128 >> mip};
+                command_list->RSSetScissorRects(1, &rect);
                 for (int face = 0; face < 6; ++face)
                 {
                     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -118,7 +124,7 @@ namespace feng
                     rtvDesc.Texture2DArray.ArraySize = 1;
                     // TODO::将这些不再使用的RTV回收
                     auto rtv_heap_index = renderer.GetDevice().GetRTVAllocIndex();
-                    if (mip == 0 && face ==0)
+                    if (mip == 0 && face == 0)
                     {
                         rtv_heap_begin = rtv_heap_index;
                     }
@@ -127,7 +133,8 @@ namespace feng
                     command_list->OMSetRenderTargets(1, &rtv_handle, FALSE, nullptr);
 
                     float roughness = mip / 4.0f;
-                    command_list->SetGraphicsRoot32BitConstants(0, 16, &ViewMatrixs[face], 0);
+                    Matrix T = ViewMatrixs[face].Transpose();
+                    command_list->SetGraphicsRoot32BitConstants(0, 16, &T, 0);
                     command_list->SetGraphicsRoot32BitConstants(1, 1, &roughness, 0);
                     command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
                     command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -151,7 +158,6 @@ namespace feng
             command_list->ResourceBarrier(1, &transition);
         }
 
-        
         {
             auto light_shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\sky_light_evaluate.hlsl");
             CD3DX12_ROOT_PARAMETER slotRootParameter[5];
@@ -190,56 +196,56 @@ namespace feng
     void SkyLightEffect::Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList *command_list, uint8_t idx)
     {
 
-        {
-             auto transition = CD3DX12_RESOURCE_BARRIER::Transition(specular_resource_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-            command_list->ResourceBarrier(1, &transition);
-            Matrix ViewMatrixs[6];
-            ViewMatrixs[0] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Right, Vector3::Backward).Invert();
-            ViewMatrixs[1] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Left,  Vector3::Backward) .Invert();
-            ViewMatrixs[2] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Up,    Vector3::Backward)   .Invert();
-            ViewMatrixs[3] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Down,  Vector3::Backward) .Invert();
-            ViewMatrixs[4] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Backward, Vector3::Up)  .Invert();
-            ViewMatrixs[5] = Matrix::CreateLookAt(Vector3::Zero, Vector3::Forward, Vector3::Up)   .Invert();
-            command_list->SetPipelineState(specular_pipeline_.Get());
-            command_list->SetGraphicsRootSignature(specular_sigature_.Get());
-            command_list->SetGraphicsRootDescriptorTable(2, cubemap_->GetGPUSRV());
+        // {
+        //     auto transition = CD3DX12_RESOURCE_BARRIER::Transition(specular_resource_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        //     command_list->ResourceBarrier(1, &transition);
+        //     Matrix ViewMatrixs[6];
+        //     ViewMatrixs[0] = Matrix::CreateLookAt(Vector3::Right, Vector3::Zero, Vector3::Up).Invert();
+        //     ViewMatrixs[1] = Matrix::CreateLookAt(Vector3::Left, Vector3::Zero, Vector3::Up).Invert();
+        //     ViewMatrixs[2] = Matrix::CreateLookAt(Vector3::Up, Vector3::Zero, Vector3::Forward).Invert();
+        //     ViewMatrixs[3] = Matrix::CreateLookAt(Vector3::Down, Vector3::Zero, Vector3::Backward).Invert();
+        //     ViewMatrixs[4] = Matrix::CreateLookAt(Vector3::Backward, Vector3::Zero, Vector3::Up).Invert();
+        //     ViewMatrixs[5] = Matrix::CreateLookAt(Vector3::Forward, Vector3::Zero, Vector3::Up).Invert();
+        //     command_list->SetPipelineState(specular_pipeline_.Get());
+        //     command_list->SetGraphicsRootSignature(specular_sigature_.Get());
+        //     command_list->SetGraphicsRootDescriptorTable(2, cubemap_->GetGPUSRV());
 
-            for (int mip = 0; mip < 5; ++mip)
-            {
-                D3D12_VIEWPORT viewport;
-                viewport.TopLeftX = 0;
-                viewport.TopLeftY = 0;
-                viewport.Width = 128 >> mip;
-                viewport.Height = 128 >> mip;
-                viewport.MinDepth = 0.0f;
-                viewport.MaxDepth = 1.0f;
-                command_list->RSSetViewports(1, &viewport);
-                D3D12_RECT rect = {0, 0, 128 >> mip, 128 >> mip};
-                command_list->RSSetScissorRects(1, &rect);
+        //     for (int mip = 0; mip < 5; ++mip)
+        //     {
+        //         D3D12_VIEWPORT viewport;
+        //         viewport.TopLeftX = 0;
+        //         viewport.TopLeftY = 0;
+        //         viewport.Width = 128 >> mip;
+        //         viewport.Height = 128 >> mip;
+        //         viewport.MinDepth = 0.0f;
+        //         viewport.MaxDepth = 1.0f;
+        //         command_list->RSSetViewports(1, &viewport);
+        //         D3D12_RECT rect = {0, 0, 128 >> mip, 128 >> mip};
+        //         command_list->RSSetScissorRects(1, &rect);
 
-                for (int face = 0; face < 6; ++face)
-                {
-                    D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-                    rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
-                    rtvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-                    rtvDesc.Texture2DArray.MipSlice = mip;
-                    rtvDesc.Texture2DArray.FirstArraySlice = face;
-                    rtvDesc.Texture2DArray.ArraySize = 1;
-                    auto rtv_handle = renderer.GetDevice().GetRTVHeap().GetCpuHandle(rtv_heap_begin + mip * 6 + face);
-                    command_list->OMSetRenderTargets(1, &rtv_handle, FALSE, nullptr);
+        //         for (int face = 0; face < 6; ++face)
+        //         {
+        //             D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+        //             rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+        //             rtvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        //             rtvDesc.Texture2DArray.MipSlice = mip;
+        //             rtvDesc.Texture2DArray.FirstArraySlice = face;
+        //             rtvDesc.Texture2DArray.ArraySize = 1;
+        //             auto rtv_handle = renderer.GetDevice().GetRTVHeap().GetCpuHandle(rtv_heap_begin + mip * 6 + face);
+        //             command_list->OMSetRenderTargets(1, &rtv_handle, FALSE, nullptr);
 
-                    float roughness = mip / 4.0f;
-                    Matrix T = ViewMatrixs[face].Transpose();
-                    command_list->SetGraphicsRoot32BitConstants(0, 16, &T, 0);
-                    command_list->SetGraphicsRoot32BitConstants(1, 1, &roughness, 0);
-                    command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
-                    command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                    command_list->DrawInstanced(3, 1, 0, 0);
-                }
-            }
-             auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(specular_resource_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-            command_list->ResourceBarrier(1, &transition2);
-        }
+        //             float roughness = mip / 4.0f;
+        //             Matrix T = ViewMatrixs[face].Transpose();
+        //             command_list->SetGraphicsRoot32BitConstants(0, 16, &T, 0);
+        //             command_list->SetGraphicsRoot32BitConstants(1, 1, &roughness, 0);
+        //             command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
+        //             command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        //             command_list->DrawInstanced(3, 1, 0, 0);
+        //         }
+        //     }
+        //     auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(specular_resource_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        //     command_list->ResourceBarrier(1, &transition2);
+        // }
         command_list->SetPipelineState(light_pipeline_.Get());
         command_list->SetGraphicsRootSignature(light_signature_.Get());
         command_list->RSSetViewports(1, &renderer.viewport_);

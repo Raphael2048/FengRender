@@ -35,6 +35,7 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
+
 float4 PS(VertexOut pin) : SV_Target
 {
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.Sample(linear_sampler, pin.uv).rg;

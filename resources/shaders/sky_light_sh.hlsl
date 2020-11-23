@@ -9,7 +9,6 @@ void CS(int3 dispatch_thread_id : SV_DispatchThreadID)
 {
     const int D1 = 50;
     const int D2 = 50;
-    int index = dispatch_thread_id.x;
 
     ThreeOrderSH R, G, B;
     R.V0 = R.V1 = G.V0 = G.V1 = B.V0 = B.V1 = 0;
