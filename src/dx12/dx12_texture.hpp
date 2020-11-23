@@ -31,6 +31,25 @@ namespace feng
         bool inited_ = false;
     };
 
+    class DynamicPlainTexture : public Uncopyable
+    {
+    public:
+        DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv = true, bool need_uav = false);
+        void TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state);
+        ID3D12Resource *GetResource() { return buffer_.Get(); }
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAV();
+
+    private:
+        Device *device_;
+        D3D12_RESOURCE_STATES current_state_;
+        ComPtr<ID3D12Resource> buffer_;
+        int srv_heap_index_ = -1;
+        int rtv_heap_index_ = -1;
+        int uav_heap_index_ = -1;
+    };
+
     class DynamicTexture : public Uncopyable
     {
     public:
@@ -54,6 +73,5 @@ namespace feng
             int rtv_heap_index_ = -1;
             int dsv_heap_index_;
         };
-        int uav_heap_index_ = -1;
     };
 } // namespace feng

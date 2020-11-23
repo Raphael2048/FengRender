@@ -43,6 +43,102 @@ namespace feng
         metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);
     }
 
+    DynamicPlainTexture::DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv, bool need_uav)
+        : device_(&device)
+    {
+        D3D12_RESOURCE_DESC texDesc;
+        ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
+        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texDesc.Alignment = 0;
+        texDesc.Width = width;
+        texDesc.Height = height;
+        texDesc.DepthOrArraySize = 1;
+        texDesc.MipLevels = 1;
+        texDesc.Format = format;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
+        if (need_rtv) flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        if (need_uav) flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        texDesc.Flags = flags;
+        auto HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        TRY(device.GetDevice()->CreateCommittedResource(
+            &HeapProp,
+            D3D12_HEAP_FLAG_NONE,
+            &texDesc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&buffer_)));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+
+ 
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        srvDesc.Texture2D.MipLevels = 1;
+        srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+        srvDesc.Texture2D.PlaneSlice = 0;
+        srv_heap_index_ = device.GetSRVAllocIndex();
+        device.GetDevice()->CreateShaderResourceView(
+            buffer_.Get(),
+            &srvDesc,
+            device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
+
+        if (need_rtv)
+        {
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+            rtvDesc.Format = format;
+            rtvDesc.Texture2D.MipSlice = 0;
+            rtvDesc.Texture2D.PlaneSlice = 0;
+            rtv_heap_index_ = device.GetRTVAllocIndex();
+            device.GetDevice()->CreateRenderTargetView(
+                buffer_.Get(),
+                &rtvDesc,
+                device.GetRTVHeap().GetCpuHandle(rtv_heap_index_));
+        }
+
+        if (need_uav)
+        {
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Format = format;
+            uavDesc.Texture2D.MipSlice = 0;
+            uavDesc.Texture2D.PlaneSlice = 0;
+            uav_heap_index_ = device.GetSRVAllocIndex();
+            device.GetDevice()->CreateUnorderedAccessView(
+                buffer_.Get(), nullptr,
+                &uavDesc,
+                device.GetSRVHeap().GetCpuHandle(uav_heap_index_));
+        }
+
+        current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
+    }
+
+    void DynamicPlainTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
+    {
+        if (state == current_state_)
+            return;
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
+        command->ResourceBarrier(1, &transition);
+        current_state_ = state;
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE DynamicPlainTexture::GetCPURTV()
+    {
+        return device_->GetRTVHeap().GetCpuHandle(rtv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTexture::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTexture::GetGPUUAV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_);
+    }
+
     DynamicTexture::DynamicTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
         : device_(&device)
     {
@@ -152,22 +248,5 @@ namespace feng
     D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUSRV()
     {
         return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
-    }
-
-    D3D12_GPU_DESCRIPTOR_HANDLE DynamicTexture::GetGPUUAV()
-    {
-        if (uav_heap_index_ == -1)
-        {
-            uav_heap_index_ = device_->GetSRVAllocIndex();
-            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-            uavDesc.Format = buffer_->GetDesc().Format;
-            uavDesc.Texture2D.MipSlice = 0;
-            uavDesc.Texture2D.PlaneSlice = 0;
-            device_->GetDevice()->CreateUnorderedAccessView(
-                buffer_.Get(), nullptr, &uavDesc,
-                device_->GetSRVHeap().GetCpuHandle(uav_heap_index_));
-        }
-        return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_);
     }
 } // namespace feng

@@ -11,7 +11,7 @@ protected:
         Root->SetCamera(new Camera(Vector3{10, 50, 20}, Vector3{0, 0, 0}, 1.0f, 300.0f, 60.0f, 1280.0f / 720.0f));
 
         Root->SetDirectionalLight(new DirectionalLight(Vector3(-2, -10, 5), Color(3, 2, 2)));
-        Root->SetSkyLight(new SkyLight(L"resources\\textures\\scubemap_street.dds", 0.2));
+        Root->SetSkyLight(new SkyLight(L"resources\\textures\\scubemap_street.dds", 1));
 
         Root->AddSpotLight(new SpotLight( Vector3(0, 50, 0), Vector3(1, -1, 0), Color(1, 1, 2) *3, 200, 10, 45));
         Root->AddSpotLight(new SpotLight( Vector3(0, 50, 50), Vector3(1, -1, -0), Color(1, 2, 1) , 200, 0, 30));
@@ -30,6 +30,12 @@ protected:
             L"resources\\textures\\rock\\normal.dds",
             L"resources\\textures\\rock\\roughness.dds",
             L"resources\\textures\\rock\\metallic.dds");
+        
+        auto material_pica = std::make_shared<StaticMaterial>(
+            L"resources\\textures\\pica\\albedo.dds",
+            L"resources\\textures\\pica\\normal.dds",
+            L"resources\\textures\\pica\\roughness.dds",
+            L"resources\\textures\\pica\\metallic.dds");
 
         for (auto &m : pica)
         {
@@ -38,7 +44,7 @@ protected:
                 Vector3(0, 90, 0),
                 Vector3(2, 2, 2),
                 m,
-                material));
+                material_pica));
         }
 
         Root->AddStaticMesh(new StaticMesh(
@@ -46,7 +52,7 @@ protected:
             Vector3(20, 10, 0),
             Vector3(5, 5, 5),
             sphere[0],
-            material_rock));
+            material));
 
         // Root->AddStaticMesh(new StaticMesh(
         //                 Vector3(20, 20, 20),

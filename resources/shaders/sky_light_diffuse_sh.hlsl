@@ -5,7 +5,7 @@ RWStructuredBuffer<ThreeOrderSH> SH : register(u0);
 SamplerState linear_sampler : register(s0);
 
 [numthreads(1, 1, 1)]
-void CS(int3 dispatch_thread_id : SV_DispatchThreadID)
+void CS()
 {
     const int D1 = 50;
     const int D2 = 50;

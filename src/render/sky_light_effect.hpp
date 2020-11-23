@@ -35,6 +35,9 @@ namespace feng
 
 
         //镜面反射LUT
+        std::unique_ptr<DynamicPlainTexture> texture_gf_lut_;
+        ComPtr<ID3D12RootSignature> lut_sigature_;
+        ComPtr<ID3D12PipelineState> lut_pipeline_;
 
         //光照渲染
         ComPtr<ID3D12RootSignature> light_signature_;

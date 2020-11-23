@@ -39,7 +39,6 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
-
 float GetAt(float3 ndc, int index)
 {
     float dx = 1.0f /shadowmap_size;
@@ -65,6 +64,7 @@ bool InsideBox(float3 ndc)
         && ndc.y > -0.999f && ndc.y < 0.999f
         && ndc.z > 0.001f && ndc.z <= 0.999f;
 }
+
 float4 PS(VertexOut pin) : SV_Target
 {
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.Sample(linear_sampler, pin.uv).rg;
