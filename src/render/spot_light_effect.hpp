@@ -32,7 +32,7 @@ namespace feng
 
         // For shadowmap generation
         // 512*512
-        std::vector<std::unique_ptr<DynamicTexture>> t_shadowmaps;
+        std::vector<std::unique_ptr<DynamicDepthTexture>> t_shadowmaps;
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> slight_pass_constant_buffer_;
         ComPtr<ID3D12RootSignature> shadow_pass_signature_;
         ComPtr<ID3D12PipelineState> shadow_pass_pso_;

@@ -13,7 +13,7 @@ namespace feng
         for (ptrdiff_t i = 0; i < scene.SpotLights.size(); i++)
         {
             t_shadowmaps.emplace_back(
-                new DynamicTexture(renderer.GetDevice(), 512, 512, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+                new DynamicDepthTexture(renderer.GetDevice(), 512, 512, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
         }
 
         slight_pass_constant_buffer_ = std::make_unique<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>>(renderer.GetDevice(), scene.SpotLights.size());

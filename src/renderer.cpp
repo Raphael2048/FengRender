@@ -57,12 +57,12 @@ namespace feng
         command_list->SetDescriptorHeaps(1, heaps);
 
         // 这里GPU地址是连续的, 直接用range表示
-        t_gbuffer_base_color_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
-        t_gbuffer_normal.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
-        t_gbuffer_roughness_metallic_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
-        t_depth_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_gbuffer_base_color_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
+        t_gbuffer_normal.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
+        t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
+        t_depth_.reset(new DynamicDepthTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
 
-        t_color_output_.reset(new DynamicTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        t_color_output_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
 
         depth_only_.reset(new DepthOnly(*this));
         gbuffer_output_.reset(new GBufferOutput(*this));

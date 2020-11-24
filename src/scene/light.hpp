@@ -36,10 +36,11 @@ namespace feng
     public:
         friend class SpotLightEffect;
         SpotLight(const Vector3& position, const Vector3& direction, const Color& color, float radius, float inner_angle, float outer_angle_);
-        virtual void Update(float time) override;
-        virtual void RefreshBoundingBox() override;
         virtual Node &SetScale([[maybe_unused]] const Vector3 &scale) override { return *this; }
         virtual Node &SetRotation([[maybe_unused]] const Vector3 &rotation) override { return *this; }
+        virtual void Update(float time) override;
+        virtual void RefreshBoundingBox() override;
+        const DirectX::BoundingFrustum GetBoundingFrustum();
         SpotLight& SetDirection(const Vector3& direction)
         {
             direction_ = direction;
@@ -48,7 +49,6 @@ namespace feng
             return *this;
         }
 
-        const DirectX::BoundingFrustum GetBoundingFrustum();
         Matrix MatrixProj;
         Matrix MatrixInvProj;
     private:
@@ -66,6 +66,10 @@ namespace feng
     public:
         friend class PointLightEffect;
         PointLight(const Vector3& position, const Color& color, float radius);
+        virtual Node &SetScale([[maybe_unused]] const Vector3 &scale) override { return *this; }
+        virtual Node &SetRotation([[maybe_unused]] const Vector3 &rotation) override { return *this; }
+        virtual void Update(float time) override;
+        virtual void RefreshBoundingBox() override;
     private:
         // 单位 (W/sr) or (cd)
         Color color_;
@@ -77,6 +81,9 @@ namespace feng
     public:
         friend class SkyLightEffect;
         SkyLight(const std::wstring& path, float intensity);
+        virtual Node &SetScale([[maybe_unused]] const Vector3 &scale) override { return *this; }
+        virtual Node &SetPosition([[maybe_unused]] const Vector3 &pos) override { return *this; }
+        virtual Node &SetRotation([[maybe_unused]] const Vector3 &rotation) override { return *this; }
         const std::wstring& GetTexturePath()
         {
             return path_;

@@ -51,7 +51,8 @@ namespace feng
         UINT width_, height_;
 
         // depth buffer
-        std::unique_ptr<DynamicTexture> t_depth_, t_gbuffer_base_color_, t_gbuffer_normal,
+        std::unique_ptr<DynamicDepthTexture> t_depth_;
+        std::unique_ptr<DynamicPlainTexture> t_gbuffer_base_color_, t_gbuffer_normal,
             t_gbuffer_roughness_metallic_, t_color_output_;
 
         D3D12_VIEWPORT viewport_;

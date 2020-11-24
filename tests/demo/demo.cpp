@@ -37,6 +37,12 @@ protected:
             L"resources\\textures\\pica\\roughness.dds",
             L"resources\\textures\\pica\\metallic.dds");
 
+        auto material_pure = std::make_shared<StaticMaterial>(
+            L"resources\\textures\\pure\\albedo.dds",
+            L"resources\\textures\\pure\\normal.dds",
+            L"resources\\textures\\pure\\roughness.dds",
+            L"resources\\textures\\pure\\metallic.dds");
+
         for (auto &m : pica)
         {
             Root->AddStaticMesh(new StaticMesh(
@@ -52,7 +58,7 @@ protected:
             Vector3(20, 10, 0),
             Vector3(5, 5, 5),
             sphere[0],
-            material));
+            material_pure));
 
         // Root->AddStaticMesh(new StaticMesh(
         //                 Vector3(20, 20, 20),

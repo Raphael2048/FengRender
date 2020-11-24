@@ -42,12 +42,6 @@ VertexOut VS(VertexIn vin)
 float GetAt(float3 ndc, int index)
 {
     float dx = 1.0f /shadowmap_size;
-    // const float2 offset[9] =
-    // {
-    //     float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
-    //     float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
-    //     float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
-    // };
     float u = (ndc.x + 1.0f) * 0.5f;
     float v = (1.0f - ndc.y) * 0.5f;
     float sum = 0.0f;

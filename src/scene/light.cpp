@@ -94,10 +94,33 @@ namespace feng
         XMStoreFloat4(&frustum_.Orientation, DirectX::XMQuaternionMultiply(v2, v));
     }
 
+    PointLight::PointLight(const Vector3 &position, const Color &color, float radius)
+        : Node(position, Vector3::Zero, Vector3::One), color_(color), radius_(radius)
+    {
+    }
+
+    void PointLight::Update(float time)
+    {
+        if (dirty_)
+        {
+            dirty_ = false;
+            MatrixWorld = Matrix::CreateTranslation(position_);
+
+            MatrixInvWorld = Matrix::CreateTranslation(-position_);
+            cb_ready_ = 0;
+            box_dirty_ = true;
+        }
+    }
+
+    void PointLight::RefreshBoundingBox()
+    {
+        box_.Center = position_;
+        box_.Extents = Vector3(radius_, radius_, radius_);
+    }
+
     SkyLight::SkyLight(const std::wstring &path, float intensity)
         : Node(Vector3::Zero, Vector3::Zero, Vector3::One), path_(path), intensity_(intensity)
     {
-        
     }
 
 } // namespace feng

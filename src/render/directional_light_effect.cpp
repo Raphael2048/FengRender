@@ -11,9 +11,9 @@ namespace feng
         shadow_pass_pso_ = depthEffect.pso_;
 
         // 这里GPU地址是连续的, 直接用range表示
-        t_shadow_split[0].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
-        t_shadow_split[1].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
-        t_shadow_split[2].reset(new DynamicTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_shadow_split[0].reset(new DynamicDepthTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_shadow_split[1].reset(new DynamicDepthTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
+        t_shadow_split[2].reset(new DynamicDepthTexture(renderer.GetDevice(), 2048, 2048, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
 
         auto num = scene.StaticMeshes.size();
         shadow_visibity_split[0].resize(num);
@@ -89,18 +89,18 @@ namespace feng
         float half_width = half_height * camera.aspect_;
         Box box[3];
         new (box) Box(
-           Vector3(0, 0, -(near0 + far0) * 0.5f),
-           Vector3(half_width * far0 / far2, half_height * far0 / far2, (far0 - near0) * 0.5f));
+            Vector3(0, 0, -(near0 + far0) * 0.5f),
+            Vector3(half_width * far0 / far2, half_height * far0 / far2, (far0 - near0) * 0.5f));
 
         new (box + 1) Box(
-           Vector3(0, 0, -(near1 + far1) * 0.5f),
-           Vector3(half_width * far1 / far2, half_height * far1 / far2, (far1 - near1) * 0.5f));
+            Vector3(0, 0, -(near1 + far1) * 0.5f),
+            Vector3(half_width * far1 / far2, half_height * far1 / far2, (far1 - near1) * 0.5f));
 
         new (box + 2) Box(
-           Vector3(0, 0, -(near2 + far2) * 0.5f),
-           Vector3(half_width, half_height, (far2 - near2) * 0.5f));
+            Vector3(0, 0, -(near2 + far2) * 0.5f),
+            Vector3(half_width, half_height, (far2 - near2) * 0.5f));
 
-        float distances[4] = {  near0, far0, far1, far2 };
+        float distances[4] = {near0, far0, far1, far2};
 
         Matrix CameraToLight = camera.MatrixWorld * dlight.MatrixInvWorld;
         Matrix WorldToLightProjMatrixTransposed[3];
@@ -159,9 +159,7 @@ namespace feng
                     auto &context = NodeIt.GetCurrentContext();
                     for (const auto &ele : n.GetElements())
                     {
-                          if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox)
-                           && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox())
-                           )
+                        if (ele.pointer->GetBoundingBox().Intersects(WorldSpaceBoundingBox) && WorldSpaceOBB.Intersects(ele.pointer->GetBoundingBox()))
                         {
                             visibile[ele.id] = true;
                             renderer.RefreshConstantBuffer(*(ele.pointer), idx, ele.id);
@@ -220,7 +218,7 @@ namespace feng
         command_list->RSSetViewports(1, &renderer.viewport_);
         command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
         command_list->SetGraphicsRootSignature(light_pass_signature_.Get());
-        
+
         t_shadow_split[0]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         t_shadow_split[1]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         t_shadow_split[2]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

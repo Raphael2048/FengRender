@@ -33,7 +33,6 @@ namespace feng
         ComPtr<ID3D12RootSignature> specular_sigature_;
         ComPtr<ID3D12PipelineState> specular_pipeline_;
 
-
         //镜面反射LUT
         std::unique_ptr<DynamicPlainTexture> texture_gf_lut_;
         ComPtr<ID3D12RootSignature> lut_sigature_;
