@@ -1,7 +1,7 @@
 #include "dx12/dx12_device.hpp"
 namespace feng
 {
-    Fence::Fence(const Device& device)
+    Fence::Fence(const Device &device)
     {
         TRY(device.GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_)));
         fence_->SetName(L"Fence");
@@ -29,9 +29,9 @@ namespace feng
             WaitForSingleObject(event_, INFINITE);
         }
     }
-    void Fence::Signal(ID3D12CommandQueue* queue)
+    void Fence::Signal(ID3D12CommandQueue *queue)
     {
-        ++ value_;
+        ++value_;
         queue->Signal(fence_, value_);
     }
 
@@ -60,26 +60,23 @@ namespace feng
         TRY(device_->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&direct_queue_)));
         direct_queue_->SetName(L"Direct Queue");
 
-        // TRY(device_->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocator_)));
-
         command_allocators_.resize(BACK_BUFFER_SIZE);
         for (auto &allocator : command_allocators_)
         {
             TRY(device_->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(allocator.GetAddressOf())));
             NAME_D3D12RESOURCE(allocator);
         }
-        //HRESULT hr = device.GetDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, command_allocators_[0], nullptr, IID_PPV_ARGS(&command_list_));
+
         TRY(device_->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, command_allocators_[0].Get(), nullptr, IID_PPV_ARGS(command_list_.GetAddressOf())));
         NAME_D3D12RESOURCE(command_list_);
         command_list_->Close();
         //
 
-        srv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), 50));
+        srv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), 50));
 
-        rtv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 50));
+        rtv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 50));
 
-        dsv_heap_.reset( new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 10));
-
+        dsv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 30));
 
         fences_.resize(BACK_BUFFER_SIZE);
         for (int i = 0; i < BACK_BUFFER_SIZE; i++)

@@ -15,10 +15,19 @@ namespace feng
     {
     public:
         GraphicsShader(const std::wstring &filename, const D3D_SHADER_MACRO* defines = nullptr);
-        void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
+        virtual void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
     private:
         ComPtr<ID3DBlob> vs_bytes_;
         ComPtr<ID3DBlob> ps_bytes_;
+    };
+
+    class GraphicsShaderWithGS : public GraphicsShader
+    {
+    public:
+        GraphicsShaderWithGS(const std::wstring &filename, const D3D_SHADER_MACRO* defines = nullptr);
+        virtual void FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc) override;
+    private:
+        ComPtr<ID3DBlob> gs_bytes_;
     };
 
     class ComputeShader : public Shader

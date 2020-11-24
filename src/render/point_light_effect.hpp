@@ -13,14 +13,14 @@ namespace feng
     class PointLightEffect
     {
     public:
-        PointLightEffect(DepthOnly & depthEffect, Renderer &renderer, const Scene& scene);
+        PointLightEffect(Renderer &renderer, const Scene& scene);
 
         void Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList* command_list, uint8_t idx);
     
     private:
         struct PointLightBuffer
         {
-            Matrix ShadowMatrix;
+            Matrix ShadowMatrix[6];
             Vector3 LightPosition;
             float Radius;
             Color Color;
@@ -28,7 +28,7 @@ namespace feng
         };
 
         // For shadowmap generation
-        // 512*512
+        // 256*256
         std::unique_ptr<DynamicDepthTexture> t_shadowmaps[6];
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> plight_pass_constant_buffer_;
         ComPtr<ID3D12RootSignature> shadow_pass_signature_;

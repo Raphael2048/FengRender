@@ -10,6 +10,7 @@
 #include "render/tone_mapping.hpp"
 #include "render/spot_light_effect.hpp"
 #include "render/sky_light_effect.hpp"
+#include "render/point_light_effect.hpp"
 #include "render/directional_light_effect.hpp"
 #include <array>
 namespace feng
@@ -73,6 +74,7 @@ namespace feng
 
         std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
         std::unique_ptr<SpotLightEffect> spot_light_effect_;
+        std::unique_ptr<PointLightEffect> point_light_effect_;
         std::unique_ptr<SkyLightEffect> sky_light_effect_;
     };
 

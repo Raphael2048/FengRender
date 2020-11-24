@@ -14,6 +14,7 @@ namespace feng
         void SetSkyLight(SkyLight *light) { SkyLight.reset(light); }
         void AddStaticMesh(StaticMesh *mesh) { StaticMeshes.emplace_back(mesh); }
         void AddSpotLight(SpotLight *light) { SpotLights.emplace_back(light); }
+        void AddPointLight(PointLight *light) { PointLights.emplace_back(light); }
         void Init()
         {
             // 先算出BoundingBox
@@ -58,9 +59,9 @@ namespace feng
         std::unique_ptr<Camera> Camera;
 
         std::unique_ptr<DirectionalLight> DirectionalLight;
-        std::unique_ptr<SkyLight> SkyLight;
         std::vector<std::unique_ptr<SpotLight>> SpotLights;
-
+        std::vector<std::unique_ptr<PointLight>> PointLights;
+        std::unique_ptr<SkyLight> SkyLight;
         std::vector<std::unique_ptr<StaticMesh>> StaticMeshes;
 
         struct StaticMeshProxy

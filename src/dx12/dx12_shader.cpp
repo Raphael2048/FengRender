@@ -38,6 +38,21 @@ namespace feng
         };
     }
 
+    GraphicsShaderWithGS::GraphicsShaderWithGS(const std::wstring &filename, const D3D_SHADER_MACRO *defines)
+        : GraphicsShader(filename, defines)
+    {
+        gs_bytes_ = CompileShader(filename, defines, "GS", "gs_5_1");
+    }
+
+    void GraphicsShaderWithGS::FillPSO(D3D12_GRAPHICS_PIPELINE_STATE_DESC &desc)
+    {
+        GraphicsShader::FillPSO(desc);
+        desc.GS = {
+            reinterpret_cast<BYTE *>(gs_bytes_->GetBufferPointer()),
+            gs_bytes_->GetBufferSize(),
+        };
+    }
+
     ComputeShader::ComputeShader(const std::wstring &filename, const D3D_SHADER_MACRO *defines)
     {
         cs_bytes_ = CompileShader(filename, defines, "CS", "cs_5_1");

@@ -13,8 +13,10 @@ protected:
         Root->SetDirectionalLight(new DirectionalLight(Vector3(-2, -10, 5), Color(3, 2, 2)));
         Root->SetSkyLight(new SkyLight(L"resources\\textures\\scubemap_street.dds", 1));
 
-        Root->AddSpotLight(new SpotLight( Vector3(0, 50, 0), Vector3(1, -1, 0), Color(1, 1, 2) *3, 200, 10, 45));
-        Root->AddSpotLight(new SpotLight( Vector3(0, 50, 50), Vector3(1, -1, -0), Color(1, 2, 1) , 200, 0, 30));
+        Root->AddSpotLight(new SpotLight(Vector3(0, 50, 0), Vector3(1, -1, 0), Color(1, 1, 2) * 3, 200, 10, 45));
+        Root->AddSpotLight(new SpotLight(Vector3(0, 50, 50), Vector3(1, -1, -0), Color(1, 2, 1), 200, 0, 30));
+
+        // Root->AddPointLight(new PointLight(Vector3(25, 25, 25), Color(1, 2, 3), 100));
 
         auto pica = AssimpMeshLoader::LoadModel("resources\\models\\pica_scene.fbx");
         auto sphere = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");
@@ -30,7 +32,7 @@ protected:
             L"resources\\textures\\rock\\normal.dds",
             L"resources\\textures\\rock\\roughness.dds",
             L"resources\\textures\\rock\\metallic.dds");
-        
+
         auto material_pica = std::make_shared<StaticMaterial>(
             L"resources\\textures\\pica\\albedo.dds",
             L"resources\\textures\\pica\\normal.dds",
@@ -60,27 +62,12 @@ protected:
             sphere[0],
             material_pure));
 
-        // Root->AddStaticMesh(new StaticMesh(
-        //                 Vector3(20, 20, 20),
-        //                 Vector3(20, 10, 0),
-        //                 Vector3(4, 4, 4),
-        //                 m[0],
-        //                 material));
-        // for (int i = 0; i < 5; i++)
-        // {
-        //     for (int j = 0; j < 5; j++)
-        //     {
-        //         for (int k = 0; k < 5; k++)
-        //         {
-        //             Root->AddStaticMesh(new StaticMesh(
-        //                 Vector3(i * 20, j * 20, k * 20),
-        //                 Vector3(20, 10, 0),
-        //                 Vector3(4, 4, 4),
-        //                 m[0],
-        //                 (i + j + k) % 2 == 0 ? material_rock : material));
-        //         }
-        //     }
-        // }
+        Root->AddStaticMesh(new StaticMesh(
+            Vector3(40, 40, 20),
+            Vector3(20, 10, 0),
+            Vector3(5, 5, 5),
+            sphere[0],
+            material));
     }
 
     virtual void OnMouseWheel(short value) override
