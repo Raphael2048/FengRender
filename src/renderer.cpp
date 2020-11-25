@@ -151,6 +151,8 @@ namespace feng
             directional_light_effect_->Draw(*this, scene, command_list, idx);
         if (scene.SpotLights.size() > 0)
             spot_light_effect_->Draw(*this, scene, command_list, idx);
+        if (scene.PointLights.size() > 0)
+            point_light_effect_->Draw(*this, scene, command_list, idx);
         if (scene.SkyLight)
             sky_light_effect_->Draw(*this, scene, command_list, idx);
 

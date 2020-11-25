@@ -10,8 +10,10 @@ cbuffer pass_constant : register(b1)
 {
     float4x4 ViewMatrix[6];
     float4x4 ProjMatrix;
-    float3 CameraPos;
-    float FarDistance;
+    float3 LightPos;
+    float Radius;
+    float4 Color;
+    float ShadowmapSize;
 };
 
 struct VertexIn
@@ -57,7 +59,8 @@ void GS(triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream)
 
 float4 PS(GeoOut pin, out float depth : SV_Depth) : SV_Target
 {
-    float dis = distance(pin.worldPos, CameraPos);
-    depth = dis / FarDistance;
+    //写入线性深度
+    float dis = distance(pin.worldPos, LightPos);
+    depth = dis / Radius;
     return float4(0, 0, 0, 0);
 }

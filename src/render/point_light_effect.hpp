@@ -20,16 +20,21 @@ namespace feng
     private:
         struct PointLightBuffer
         {
-            Matrix ShadowMatrix[6];
+            Matrix ViewMatrix[6];
+            Matrix ProjMatrix;
             Vector3 LightPosition;
             float Radius;
             Color Color;
-            float ShadowMapSize;
+            float ShadowmapSize;
         };
 
         // For shadowmap generation
         // 256*256
-        std::unique_ptr<DynamicDepthTexture> t_shadowmaps[6];
+        std::vector<std::unique_ptr<DynamicDepthTextureCube>> t_shadowmaps;
+        std::vector<ComPtr<ID3D12Resource>> shadowmap_resource_;
+        int dsv_heap_index_ = -1;
+        int srv_heap_index_ = -1;
+
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> plight_pass_constant_buffer_;
         ComPtr<ID3D12RootSignature> shadow_pass_signature_;
         ComPtr<ID3D12PipelineState> shadow_pass_pso_;

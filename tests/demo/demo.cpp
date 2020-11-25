@@ -16,7 +16,7 @@ protected:
         Root->AddSpotLight(new SpotLight(Vector3(0, 50, 0), Vector3(1, -1, 0), Color(1, 1, 2) * 3, 200, 10, 45));
         Root->AddSpotLight(new SpotLight(Vector3(0, 50, 50), Vector3(1, -1, -0), Color(1, 2, 1), 200, 0, 30));
 
-        // Root->AddPointLight(new PointLight(Vector3(25, 25, 25), Color(1, 2, 3), 100));
+        Root->AddPointLight(new PointLight(Vector3(25, 25, 25), Color(1, 2, 3), 50));
 
         auto pica = AssimpMeshLoader::LoadModel("resources\\models\\pica_scene.fbx");
         auto sphere = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");
@@ -61,6 +61,13 @@ protected:
             Vector3(5, 5, 5),
             sphere[0],
             material_pure));
+
+        Root->AddStaticMesh(new StaticMesh(
+            Vector3(40, 40, 0),
+            Vector3(20, 10, 0),
+            Vector3(5, 5, 5),
+            sphere[0],
+            material_rock));
 
         Root->AddStaticMesh(new StaticMesh(
             Vector3(40, 40, 20),
