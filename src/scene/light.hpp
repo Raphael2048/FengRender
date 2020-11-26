@@ -61,7 +61,7 @@ namespace feng
         float outer_angle_;
     };
  
-    class PointLight : Node
+    class PointLight : public Node
     {
     public:
         friend class PointLightEffect;
@@ -76,7 +76,7 @@ namespace feng
         float radius_;
     };
 
-    class SkyLight : Node
+    class SkyLight : public Node
     {
     public:
         friend class SkyLightEffect;

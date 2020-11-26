@@ -7,7 +7,7 @@ namespace feng
 {
     PointLightEffect::PointLightEffect(Renderer &renderer, const Scene &scene)
     {
-        const int SHADOWMAP_WIDTH = 256;
+        const int SHADOWMAP_WIDTH = 512;
         auto samplers = renderer.GetStaticSamplers();
         light_info_buffer_ = std::make_unique<ConstantBufferGroup<PointLightBuffer, BACK_BUFFER_SIZE>>(renderer.GetDevice(), scene.PointLights.size());
         {
@@ -120,18 +120,19 @@ namespace feng
                 if (!pointLight.IsCBReady(idx))
                 {
                     PointLightBuffer buffer;
-                    buffer.ViewMatrix[0] = Matrix::CreateLookAt(Vector3::Right, Vector3::Zero, Vector3::Up).Invert().Transpose();
-                    buffer.ViewMatrix[1] = Matrix::CreateLookAt(Vector3::Left, Vector3::Zero, Vector3::Up).Invert().Transpose();
-                    buffer.ViewMatrix[2] = Matrix::CreateLookAt(Vector3::Up, Vector3::Zero, Vector3::Forward).Invert().Transpose();
-                    buffer.ViewMatrix[3] = Matrix::CreateLookAt(Vector3::Down, Vector3::Zero, Vector3::Backward).Invert().Transpose();
-                    buffer.ViewMatrix[4] = Matrix::CreateLookAt(Vector3::Backward, Vector3::Zero, Vector3::Up).Invert().Transpose();
-                    buffer.ViewMatrix[5] = Matrix::CreateLookAt(Vector3::Forward, Vector3::Zero, Vector3::Up).Invert().Transpose();
+                    Vector3 EyePos = pointLight.position_;
+                    buffer.ViewMatrix[0] = Matrix::CreateLookAt(EyePos + Vector3::Right,    EyePos, Vector3::Up).Transpose();
+                    buffer.ViewMatrix[1] = Matrix::CreateLookAt(EyePos + Vector3::Left,     EyePos, Vector3::Up).Transpose();
+                    buffer.ViewMatrix[2] = Matrix::CreateLookAt(EyePos + Vector3::Up,       EyePos, Vector3::Forward).Transpose();
+                    buffer.ViewMatrix[3] = Matrix::CreateLookAt(EyePos + Vector3::Down,     EyePos, Vector3::Backward).Transpose();
+                    buffer.ViewMatrix[4] = Matrix::CreateLookAt(EyePos + Vector3::Backward, EyePos, Vector3::Up).Transpose();
+                    buffer.ViewMatrix[5] = Matrix::CreateLookAt(EyePos + Vector3::Forward,  EyePos, Vector3::Up).Transpose();
 
-                    //这里用的是左手系矩阵, 加上180度的旋转
+                    //这里用的是左手系矩阵, 前面使用的是反向的视图矩阵, 相当于旋转了180度
                     buffer.ProjMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90), 1, pointLight.radius_, 0.1);
                     buffer.ProjMatrix = buffer.ProjMatrix.Transpose();
                     buffer.Color = pointLight.color_;
-                    buffer.ShadowmapSize = 256;
+                    buffer.ShadowmapSize = 512;
                     buffer.LightPosition = pointLight.position_;
                     buffer.Radius = pointLight.radius_;
                     pass_buffer.Write(index, buffer);
@@ -147,10 +148,10 @@ namespace feng
                         auto &context = NodeIt.GetCurrentContext();
                         for (const auto &ele : n.GetElements())
                         {
-                            if (ele.pointer->GetBoundingBox().Intersects(BoundingBox) && BoundingBox.Intersects(ele.pointer->GetBoundingBox()))
+                            if (ele.pointer->GetBoundingBox().Intersects(BoundingBox))
                             {
                                 renderer.RefreshConstantBuffer(*(ele.pointer), idx, ele.id);
-                                command_list->SetGraphicsRootConstantBufferView(0, renderer.object_constant_buffer_->operator[](idx).GetGPUAddressOf(index));
+                                command_list->SetGraphicsRootConstantBufferView(0, renderer.object_constant_buffer_->operator[](idx).GetGPUAddressOf(ele.id));
                                 ele.pointer->DrawWithCommand(command_list);
                             }
                         }

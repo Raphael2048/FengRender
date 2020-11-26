@@ -41,19 +41,16 @@ namespace feng
         void Update(float delta)
         {
             Camera->Update(delta);
-
             if (DirectionalLight)
                 DirectionalLight->Update(delta);
-
+            if (SkyLight)
+                SkyLight->Update(delta);
             for (auto &light : SpotLights)
-            {
                 light->Update(delta);
-            }
-
+            for (auto &light : PointLights)
+                light->Update(delta);
             for (auto &node : StaticMeshes)
-            {
                 node->Update(delta);
-            }
         }
 
         std::unique_ptr<Camera> Camera;

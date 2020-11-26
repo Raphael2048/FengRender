@@ -59,8 +59,8 @@ void GS(triangle VertexOut gin[3], inout TriangleStream<GeoOut> triStream)
 
 float4 PS(GeoOut pin, out float depth : SV_Depth) : SV_Target
 {
-    //写入线性深度
+    //写入线性深度, REVERSE-Z
     float dis = distance(pin.worldPos, LightPos);
-    depth = dis / Radius;
+    depth = 1 - dis / Radius;
     return float4(0, 0, 0, 0);
 }

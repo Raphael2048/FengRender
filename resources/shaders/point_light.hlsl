@@ -32,8 +32,7 @@ float4 PS(VertexOut pin) : SV_Target
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.Sample(linear_sampler, pin.uv).rg;
     float3 BaseColor = t_gbuffer_base_color.Sample(linear_sampler, pin.uv).rgb;
 
-    float3 ScreenSpacePos = float3(
-        pin.uv.x * 2.0f - 1.0f, 1.0f - pin.uv.y * 2.0f,  t_depth.Sample(linear_sampler, pin.uv).r);
+    float3 ScreenSpacePos = float3(pin.uv.x * 2.0f - 1.0f, 1.0f - pin.uv.y * 2.0f,  t_depth.Sample(linear_sampler, pin.uv).r);
     float4 WorldSpacePos = mul(float4(ScreenSpacePos, 1.0f), PC.inv_view_proj);
     WorldSpacePos /= WorldSpacePos.w;
 
@@ -41,14 +40,24 @@ float4 PS(VertexOut pin) : SV_Target
     float3 V = normalize(PC.camera_pos - WorldSpacePos.xyz);
 
     float3 ToLight = LightPos - WorldSpacePos.xyz;
+    float linear_depth = 1 - saturate(sqrt(dot(ToLight, ToLight)) / Radius);
     float intensity = Square(saturate(1 - Square(dot(ToLight, ToLight) / Square(Radius))));
     float3 L = normalize(ToLight);
 
-    float linear_depth = distance(WorldSpacePos.xyz, LightPos) / Radius;
-
     float3 Output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * Color.xyz;
-    float3 dir = float3(L.x, L.y, -L.z);
-    float k  = t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir, linear_depth + 0.001f).r;
 
-    return float4(Output * intensity, 0);
+    float3 dir = -L;
+    float Offset = 1 / ShadowmapSize;
+    float sum = 0;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(Offset, Offset, Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(Offset, Offset, -Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(Offset, -Offset, Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(Offset, -Offset, -Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(-Offset, Offset, Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(-Offset, Offset, -Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(-Offset, -Offset, Offset), linear_depth + 0.001).r;
+    sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(-Offset, -Offset, -Offset), linear_depth + 0.001).r;
+    float multiper = sum / 8;
+
+    return float4(Output * multiper * intensity * Color, 0);
 }
