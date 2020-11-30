@@ -31,39 +31,60 @@ namespace feng
         bool inited_ = false;
     };
 
-    class DynamicPlainTexture : public Uncopyable
+    class DynamicTexture : public Uncopyable
+    {
+    public:
+        void TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state);
+        ID3D12Resource *GetResource();
+
+    protected:
+        Device *device_;
+        D3D12_RESOURCE_STATES current_state_;
+        ComPtr<ID3D12Resource> buffer_;
+    };
+
+    class DynamicPlainTexture : public DynamicTexture
     {
     public:
         DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv = true, bool need_uav = false);
-        void TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state);
-        ID3D12Resource *GetResource() { return buffer_.Get(); }
         D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTV();
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAV();
 
     private:
-        Device *device_;
-        D3D12_RESOURCE_STATES current_state_;
-        ComPtr<ID3D12Resource> buffer_;
         int srv_heap_index_ = -1;
         int rtv_heap_index_ = -1;
         int uav_heap_index_ = -1;
     };
 
-    class DynamicDepthTexture : public Uncopyable
+    class DynamicPlainTextureMips : public DynamicTexture
+    {
+    public:
+        DynamicPlainTextureMips(Device &device, UINT64 width, UINT64 height, uint8_t mips, DXGI_FORMAT format, bool need_rtv, bool need_uav);
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV(UINT mip);
+        D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTVAt(UINT mip);
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVAt(UINT mip);
+    private:
+        Device *device_;
+        D3D12_RESOURCE_STATES current_state_;
+        ComPtr<ID3D12Resource> buffer_;
+        uint8_t mips_;
+        int srv_heap_index_;
+        std::vector<int> srv_heap_index_each_;
+        std::vector<int> uav_heap_index_each_;
+        std::vector<int> rtv_heap_index_each_;
+    };
+
+    class DynamicDepthTexture : public DynamicTexture
     {
     public:
         DynamicDepthTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format);
-        void TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state);
-        ID3D12Resource *GetResource() { return buffer_.Get(); }
         D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDSV();
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
 
     protected:
         DynamicDepthTexture() = default;
-        Device *device_;
-        D3D12_RESOURCE_STATES current_state_;
-        ComPtr<ID3D12Resource> buffer_;
         int srv_heap_index_ = -1;
         int dsv_heap_index_ = -1;
     };

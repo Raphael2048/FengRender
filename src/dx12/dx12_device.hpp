@@ -14,7 +14,7 @@ namespace feng
         void Wait();
         void Signal(ID3D12CommandQueue* queue);
     private:
-        ID3D12Fence1* fence_;
+        ComPtr<ID3D12Fence1> fence_;
         HANDLE event_ = nullptr;
         UINT64 value_ = 0u;
     };

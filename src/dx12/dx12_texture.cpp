@@ -43,9 +43,23 @@ namespace feng
         metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);
     }
 
-    DynamicPlainTexture::DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv, bool need_uav)
-        : device_(&device)
+    void DynamicTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
     {
+        if (state == current_state_)
+            return;
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
+        command->ResourceBarrier(1, &transition);
+        current_state_ = state;
+    }
+
+    ID3D12Resource *DynamicTexture::GetResource()
+    {
+        return buffer_.Get();
+    }
+
+    DynamicPlainTexture::DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv, bool need_uav)
+    {
+        device_ = &device;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -124,15 +138,6 @@ namespace feng
         current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
     }
 
-    void DynamicPlainTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
-    {
-        if (state == current_state_)
-            return;
-        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
-        command->ResourceBarrier(1, &transition);
-        current_state_ = state;
-    }
-
     D3D12_CPU_DESCRIPTOR_HANDLE DynamicPlainTexture::GetCPURTV()
     {
         return device_->GetRTVHeap().GetCpuHandle(rtv_heap_index_);
@@ -146,9 +151,129 @@ namespace feng
         return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_);
     }
 
-    DynamicDepthTexture::DynamicDepthTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
-        : device_(&device)
+    DynamicPlainTextureMips::DynamicPlainTextureMips(Device &device, UINT64 width, UINT64 height, uint8_t mips, DXGI_FORMAT format, bool need_rtv, bool need_uav)
     {
+        device_ = &device;
+        mips_ = mips;
+        D3D12_RESOURCE_DESC texDesc;
+        ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
+        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texDesc.Alignment = 0;
+        texDesc.Width = width;
+        texDesc.Height = height;
+        texDesc.DepthOrArraySize = 1;
+        texDesc.MipLevels = mips_;
+        texDesc.Format = format;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
+        if (need_rtv)
+            flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        if (need_uav)
+            flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        texDesc.Flags = flags;
+
+        D3D12_CLEAR_VALUE optClear;
+        optClear.Format = format;
+        optClear.Color[0] = optClear.Color[1] = optClear.Color[2] = optClear.Color[3] = 0;
+
+        auto HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        TRY(device.GetDevice()->CreateCommittedResource(
+            &HeapProp,
+            D3D12_HEAP_FLAG_NONE,
+            &texDesc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            need_uav ? nullptr : &optClear,
+            IID_PPV_ARGS(&buffer_)));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        srvDesc.Texture2D.MipLevels = mips_;
+        srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+        srvDesc.Texture2D.PlaneSlice = 0;
+        srv_heap_index_ = device.GetSRVAllocIndex();
+
+        device.GetDevice()->CreateShaderResourceView(
+            buffer_.Get(),
+            &srvDesc,
+            device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
+
+        rtv_heap_index_each_.resize(mips_, -1);
+        uav_heap_index_each_.resize(mips_, -1);
+        srv_heap_index_each_.resize(mips_, -1);
+
+        current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetGPUSRV(UINT mip)
+    {
+        if (srv_heap_index_each_[mip] == -1)
+        {
+            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+            srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            srvDesc.Format = buffer_->GetDesc().Format;
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Texture2D.MostDetailedMip = mip;
+            srvDesc.Texture2D.MipLevels = 1;
+            srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+            srvDesc.Texture2D.PlaneSlice = 0;
+            srv_heap_index_each_[mip] = device_->GetSRVAllocIndex();
+            device_->GetDevice()->CreateShaderResourceView(
+                buffer_.Get(),
+                &srvDesc,
+                device_->GetSRVHeap().GetCpuHandle(srv_heap_index_each_[mip]));
+        }
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_each_[mip]);
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetCPURTVAt(UINT mip)
+    {
+        if (rtv_heap_index_each_[mip] == -1)
+        {
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+            rtvDesc.Format = buffer_->GetDesc().Format;
+            rtvDesc.Texture2D.MipSlice = mip;
+            rtvDesc.Texture2D.PlaneSlice = 0;
+            rtv_heap_index_each_[mip] = device_->GetRTVAllocIndex();
+            device_->GetDevice()->CreateRenderTargetView(
+                buffer_.Get(),
+                &rtvDesc,
+                device_->GetRTVHeap().GetCpuHandle(rtv_heap_index_each_[mip]));
+        }
+        return device_->GetRTVHeap().GetCpuHandle(rtv_heap_index_each_[mip]);
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetGPUUAVAt(UINT mip)
+    {
+        if (uav_heap_index_each_[mip] == -1)
+        {
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Format = buffer_->GetDesc().Format;
+            uavDesc.Texture2D.MipSlice = mip;
+            uavDesc.Texture2D.PlaneSlice = 0;
+            uav_heap_index_each_[mip] = device_->GetSRVAllocIndex();
+            device_->GetDevice()->CreateUnorderedAccessView(
+                buffer_.Get(), nullptr,
+                &uavDesc,
+                device_->GetSRVHeap().GetCpuHandle(uav_heap_index_each_[mip]));
+        }
+        return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_each_[mip]);
+    }
+
+    DynamicDepthTexture::DynamicDepthTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
+    {
+        device_ = &device;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -205,15 +330,6 @@ namespace feng
         current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
     }
 
-    void DynamicDepthTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
-    {
-        if (state == current_state_)
-            return;
-        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(buffer_.Get(), current_state_, state);
-        command->ResourceBarrier(1, &transition);
-        current_state_ = state;
-    }
-
     D3D12_CPU_DESCRIPTOR_HANDLE DynamicDepthTexture::GetCPUDSV()
     {
         return device_->GetDSVHeap().GetCpuHandle(dsv_heap_index_);
@@ -227,7 +343,7 @@ namespace feng
     DynamicDepthTextureCube::DynamicDepthTextureCube(Device &device, UINT64 width, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
     {
         device_ = &device;
-                D3D12_RESOURCE_DESC texDesc;
+        D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         texDesc.Alignment = 0;

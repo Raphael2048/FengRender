@@ -14,7 +14,6 @@ namespace feng
 
     Fence::~Fence()
     {
-        SAFE_RELEASE(fence_);
         CloseHandle(event_);
     }
     void Fence::SetName(std::wstring name)
@@ -32,7 +31,7 @@ namespace feng
     void Fence::Signal(ID3D12CommandQueue *queue)
     {
         ++value_;
-        queue->Signal(fence_, value_);
+        queue->Signal(fence_.Get(), value_);
     }
 
     Device::Device(bool debug)

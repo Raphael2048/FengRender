@@ -39,8 +39,6 @@ inline std::string HResultToString(HRESULT hr)
 	}
 }
 
-//! Checks whether the d3d12 object exists before releasing it.
-#define SAFE_RELEASE(obj) { if ( obj ) { obj->Release(); obj = NULL; } }
 
 //! Handles a hresult.
 #define TRY(result) if (FAILED(result)) { FMSG("An hresult returned a error!. File: " + std::string(__FILE__) + " Line: " + std::to_string(__LINE__) + " HRResult: " +  HResultToString(result)); }

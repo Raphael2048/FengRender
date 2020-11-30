@@ -43,7 +43,7 @@ namespace feng
         RenderWindow &GetRenderWindow() { return *render_window_; }
         void Init(const Scene &scene);
         void Draw(Scene &scene);
-        void RefreshConstantBuffer(const StaticMesh& mesh, uint8_t idx, ptrdiff_t distance);
+        void RefreshConstantBuffer(const StaticMesh &mesh, uint8_t idx, ptrdiff_t distance);
 
         std::array<const CD3DX12_STATIC_SAMPLER_DESC, 2> &GetStaticSamplers();
 
@@ -55,6 +55,7 @@ namespace feng
         std::unique_ptr<DynamicDepthTexture> t_depth_;
         std::unique_ptr<DynamicPlainTexture> t_gbuffer_base_color_, t_gbuffer_normal,
             t_gbuffer_roughness_metallic_, t_color_output_;
+        std::unique_ptr<DynamicPlainTextureMips> t_hzb_;
 
         D3D12_VIEWPORT viewport_;
         D3D12_RECT scissor_rect_;
@@ -64,6 +65,7 @@ namespace feng
         // PostProcessing VertexData
         std::unique_ptr<StaticBuffer> pp_vertex_buffer_;
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
+
     private:
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;

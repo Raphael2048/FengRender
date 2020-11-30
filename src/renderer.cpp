@@ -68,6 +68,8 @@ namespace feng
         gbuffer_output_.reset(new GBufferOutput(*this));
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
 
+        t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
+
         if (scene.DirectionalLight) directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
         if (scene.SpotLights.size() > 0) spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
         if (scene.PointLights.size() > 0) point_light_effect_.reset(new PointLightEffect(*this, scene));

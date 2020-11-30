@@ -5,11 +5,14 @@ namespace feng
 {
     class Renderer;
     class Scene;
-    class EffectBase : public Uncopyable
+    class HZBEffect : public Uncopyable
     {
-    protected:
-        std::unique_ptr<GraphicsShader> shader;
+    public:
+        HZBEffect(Renderer& renderer);
+
+        void Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList* command_list, uint8_t idx);
+    private:
         ComPtr<ID3D12RootSignature> signature_;
         ComPtr<ID3D12PipelineState> pso_;
     };
-} // namespace feng
+}

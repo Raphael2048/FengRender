@@ -10,7 +10,7 @@ namespace feng
     class Renderer;
     class Scene;
     class PointLight;
-    class PointLightEffect
+    class PointLightEffect : public Uncopyable
     {
     public:
         PointLightEffect(Renderer &renderer, const Scene& scene);
