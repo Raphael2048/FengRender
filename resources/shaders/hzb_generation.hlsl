@@ -23,20 +23,20 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID, uint GroupThreadIndex : SV
     //写入到共享内存, 加速访问
     // SharedClosestDeviceZ[GroupThreadIndex] = ClosestZ;
 
-    [UNROLL]
+    [unroll]
     for(uint MipLevel = 1; MipLevel < 5; MipLevel++)
     {
         GroupMemoryBarrierWithGroupSync();
-        [BRANCH]
+        [branch]
         if (OutputPixelPos.x % 2 == 0 && OutputPixelPos.y % 2 == 0)
         {
             OutputPixelPos = OutputPixelPos >> 1;
             float4 ParentValues;
             ParentValues.x = HZBOutputs[MipLevel-1][OutputPixelPos * 2];
-            ParentValues.y = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint(1, 0)];
-            ParentValues.z = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint(0, 1)];
-            ParentValues.w = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint(1, 1)];
-            HZBOutpus[MipLevel][OutputPixelPos] = max(max(ParentValues.x, ParentValues.y), max(ParentValues.z, ParentValues.w));
+            ParentValues.y = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint2(1, 0)];
+            ParentValues.z = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint2(0, 1)];
+            ParentValues.w = HZBOutputs[MipLevel-1][OutputPixelPos * 2 + uint2(1, 1)];
+            HZBOutputs[MipLevel][OutputPixelPos] = max(max(ParentValues.x, ParentValues.y), max(ParentValues.z, ParentValues.w));
         }
     }
 }

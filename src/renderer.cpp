@@ -61,14 +61,13 @@ namespace feng
         t_gbuffer_normal.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
         t_depth_.reset(new DynamicDepthTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
-
         t_color_output_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         depth_only_.reset(new DepthOnly(*this));
+        hzb_.reset(new HZBEffect(*this));
         gbuffer_output_.reset(new GBufferOutput(*this));
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
-
-        t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         if (scene.DirectionalLight) directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
         if (scene.SpotLights.size() > 0) spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
@@ -141,13 +140,16 @@ namespace feng
         gbuffer_output_->Draw(*this, scene, command_list, idx);
 
         //Prepare For Lighting
-        t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_gbuffer_normal->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_gbuffer_base_color_->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
+        t_gbuffer_normal->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
+        t_gbuffer_roughness_metallic_->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
+        t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
         t_color_output_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
+
+        // Generate HZB
+        hzb_->Draw(*this, scene, command_list, idx);
 
         if (scene.DirectionalLight)
             directional_light_effect_->Draw(*this, scene, command_list, idx);

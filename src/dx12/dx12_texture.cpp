@@ -214,7 +214,7 @@ namespace feng
         return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
     }
 
-    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetGPUSRV(UINT mip)
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlainTextureMips::GetGPUSRVAt(UINT mip)
     {
         if (srv_heap_index_each_[mip] == -1)
         {

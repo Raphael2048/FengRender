@@ -59,5 +59,5 @@ float4 PS(VertexOut pin) : SV_Target
     sum  += t_shadowmap.SampleCmpLevelZero(shadow_sampler, dir + float3(-Offset, -Offset, -Offset), linear_depth + 0.001).r;
     float multiper = sum / 8;
 
-    return float4(Output * multiper * intensity * Color, 0);
+    return float4(Output * multiper * intensity * Color.xyz, 0);
 }

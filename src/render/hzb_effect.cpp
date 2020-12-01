@@ -9,15 +9,17 @@ namespace feng
         auto shader = std::make_unique<ComputeShader>(L"resources\\shaders\\hzb_generation.hlsl", nullptr);
         auto samplers = renderer.GetStaticSamplers();
 
-        CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+        CD3DX12_ROOT_PARAMETER slotRootParameter[3];
         CD3DX12_DESCRIPTOR_RANGE cbvTable;
         cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
         slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
         CD3DX12_DESCRIPTOR_RANGE cbvTable2;
         cbvTable2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 5, 0);
         slotRootParameter[1].InitAsDescriptorTable(1, &cbvTable2);
+        slotRootParameter[2].InitAsConstants(2, 0);
 
-        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 1, samplers.data(),
+        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 1, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
         TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &signature_));
@@ -26,38 +28,39 @@ namespace feng
         ZeroMemory(&psoDesc, sizeof(D3D12_COMPUTE_PIPELINE_STATE_DESC));
         shader->FillPSO(psoDesc);
         psoDesc.pRootSignature = signature_.Get();
-        renderer.GetDevice().GetDevice()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
+        TRY(renderer.GetDevice().GetDevice()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pso_)));
+        // 预先分配好连续地址的UAV
+        for (UINT i = 0; i < 10; ++i)
+        {
+            renderer.t_hzb_->GetGPUUAVAt(i);
+        }
     }
 
     void HZBEffect::Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList *command_list, uint8_t idx)
     {
         command_list->SetPipelineState(pso_.Get());
-        command_list->RSSetViewports(1, &renderer.viewport_);
-        command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
+        command_list->SetComputeRootSignature(signature_.Get());
 
-        renderer.t_depth_->TransitionState(command_list, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        // 生成 Mips 0~4
+        renderer.t_hzb_->TransitionState(command_list, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        command_list->SetComputeRootDescriptorTable(0, renderer.t_depth_->GetGPUSRV());
+        command_list->SetComputeRootDescriptorTable(1, renderer.t_hzb_->GetGPUUAVAt(0));
+        Vector2 convert = {1.0f / 1024, 1.0f / 512};
+        command_list->SetComputeRoot32BitConstants(2, 2, &convert, 0);
+        command_list->Dispatch(64, 32, 1);
 
-        auto depth_descriptor = renderer.t_depth_->GetCPUDSV();
-
-        command_list->OMSetRenderTargets(0, nullptr, TRUE, &depth_descriptor);
-        command_list->ClearDepthStencilView(depth_descriptor, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
-
-        command_list->SetGraphicsRootSignature(signature_.Get());
-
-        command_list->SetGraphicsRootConstantBufferView(1, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
-
-        ConstantBuffer<ObjectConstantBuffer> &object_buffer = renderer.object_constant_buffer_->operator[](idx);
-        D3D12_GPU_VIRTUAL_ADDRESS object_buffer_base_address = object_buffer.GetResource()->GetGPUVirtualAddress();
-
-        for (auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
-        {
-            auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
-            if (scene.StaticMeshesVisibity[dis])
-            {
-                command_list->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                command_list->SetGraphicsRootConstantBufferView(0, object_buffer_base_address + dis * object_buffer.GetSize());
-                it->get()->DrawWithCommand(command_list);
-            }
-        }
+        // 生成 Mips 5~9
+        // 将Mip4转换为SRV
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(
+            renderer.t_hzb_->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, 4);
+        command_list->ResourceBarrier(1, &transition);
+        command_list->SetComputeRootDescriptorTable(0, renderer.t_hzb_->GetGPUSRVAt(4));
+        command_list->SetComputeRootDescriptorTable(1, renderer.t_hzb_->GetGPUUAVAt(5));
+        convert = Vector2{1.0f / 32, 1.0f / 16};
+        command_list->SetComputeRoot32BitConstants(2, 2, &convert, 0);
+        command_list->Dispatch(2, 1, 1);
+        auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(
+            renderer.t_hzb_->GetResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 4);
+        command_list->ResourceBarrier(1, &transition2);
     }
 } // namespace feng

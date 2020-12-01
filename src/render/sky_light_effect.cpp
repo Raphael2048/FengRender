@@ -28,7 +28,7 @@ namespace feng
             psoDesc.pRootSignature = sh_sigature_.Get();
             renderer.GetDevice().GetDevice()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&sh_pipeline));
 
-            auto transition = CD3DX12_RESOURCE_BARRIER::Transition(texture->GetBuffer(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            auto transition = CD3DX12_RESOURCE_BARRIER::Transition(texture->GetBuffer(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_GENERIC_READ);
             command_list->ResourceBarrier(1, &transition);
             command_list->SetPipelineState(sh_pipeline.Get());
             command_list->SetComputeRootSignature(sh_sigature_.Get());
@@ -36,8 +36,6 @@ namespace feng
             command_list->SetComputeRootUnorderedAccessView(1, sh_buffer_->GetGPUAddress());
             command_list->Dispatch(1, 1, 1);
             sh_buffer_->AsSRV(command_list);
-            auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(texture->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-            command_list->ResourceBarrier(1, &transition2);
         }
 
         {

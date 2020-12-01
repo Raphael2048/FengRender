@@ -6,6 +6,7 @@
 #include "dx12/dx12_buffer.hpp"
 #include "scene/camera.hpp"
 #include "render/depth_only.hpp"
+#include "render/hzb_effect.hpp"
 #include "render/gbuffer_output.hpp"
 #include "render/tone_mapping.hpp"
 #include "render/spot_light_effect.hpp"
@@ -71,8 +72,10 @@ namespace feng
         std::unique_ptr<RenderWindow> render_window_;
 
         std::unique_ptr<DepthOnly> depth_only_;
+        std::unique_ptr<HZBEffect> hzb_;
         std::unique_ptr<GBufferOutput> gbuffer_output_;
         std::unique_ptr<ToneMapping> tone_mapping_;
+
 
         std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
         std::unique_ptr<SpotLightEffect> spot_light_effect_;

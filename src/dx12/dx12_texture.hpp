@@ -62,13 +62,10 @@ namespace feng
     public:
         DynamicPlainTextureMips(Device &device, UINT64 width, UINT64 height, uint8_t mips, DXGI_FORMAT format, bool need_rtv, bool need_uav);
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
-        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV(UINT mip);
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVAt(UINT mip);
         D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTVAt(UINT mip);
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVAt(UINT mip);
     private:
-        Device *device_;
-        D3D12_RESOURCE_STATES current_state_;
-        ComPtr<ID3D12Resource> buffer_;
         uint8_t mips_;
         int srv_heap_index_;
         std::vector<int> srv_heap_index_each_;
