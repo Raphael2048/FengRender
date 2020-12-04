@@ -88,7 +88,6 @@ float4 PS(VertexOut pin) : SV_Target
     float intensity = Square(saturate(1 - Square(dot(ToLight, ToLight) / Square(light_radius))));
     float delta_cosine = dot(normalize(-light_direction), L);
     float falloff_k = 0.0f;
-    [branch]
     if (delta_cosine > inner_falloff)
     {
         falloff_k = 1.0f;

@@ -186,7 +186,7 @@ namespace feng
 
         {
             auto light_shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\sky_light_evaluate.hlsl");
-            CD3DX12_ROOT_PARAMETER slotRootParameter[6];
+            CD3DX12_ROOT_PARAMETER slotRootParameter[7];
             CD3DX12_DESCRIPTOR_RANGE lightTable;
             lightTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0);
             slotRootParameter[0].InitAsDescriptorTable(1, &lightTable);
@@ -199,8 +199,11 @@ namespace feng
             CD3DX12_DESCRIPTOR_RANGE lightTable3;
             lightTable3.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6);
             slotRootParameter[5].InitAsDescriptorTable(1, &lightTable3);
+            CD3DX12_DESCRIPTOR_RANGE lightTable4;
+            lightTable4.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 7);
+            slotRootParameter[6].InitAsDescriptorTable(1, &lightTable4);
             CD3DX12_ROOT_SIGNATURE_DESC light_root_desc(
-                6, slotRootParameter, 1, samplers.data(),
+                7, slotRootParameter, 1, samplers.data(),
                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
             TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &light_root_desc, &light_signature_));
             D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
@@ -287,6 +290,7 @@ namespace feng
         command_list->SetGraphicsRootConstantBufferView(3, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         command_list->SetGraphicsRootDescriptorTable(4, renderer.GetDevice().GetSRVHeap().GetGpuHandle(specular_final_srv_index_));
         command_list->SetGraphicsRootDescriptorTable(5, texture_gf_lut_->GetGPUSRV());
+        command_list->SetGraphicsRootDescriptorTable(6, renderer.t_ao_->GetGPUSRV());
         command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
         command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         command_list->DrawInstanced(3, 1, 0, 0);

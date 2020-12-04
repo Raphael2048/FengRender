@@ -35,12 +35,18 @@ namespace feng
     {
     public:
         void TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state);
-        ID3D12Resource *GetResource();
+        DynamicTexture(Device &device, UINT64 width, UINT64 height) : device_(&device), width_(width), height_(height) {}
+        DynamicTexture() = default;
+        ID3D12Resource *GetResource() { return buffer_.Get(); }
+        UINT64 GetWidth() { return width_; };
+        UINT64 GetHeight() { return height_; };
 
     protected:
         Device *device_;
         D3D12_RESOURCE_STATES current_state_;
         ComPtr<ID3D12Resource> buffer_;
+        UINT64 width_;
+        UINT64 height_;
     };
 
     class DynamicPlainTexture : public DynamicTexture
@@ -65,6 +71,7 @@ namespace feng
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVAt(UINT mip);
         D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTVAt(UINT mip);
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVAt(UINT mip);
+
     private:
         uint8_t mips_;
         int srv_heap_index_;

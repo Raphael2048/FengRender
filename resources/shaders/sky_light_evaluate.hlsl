@@ -7,6 +7,7 @@ Texture2D<float> t_depth : register(t3);
 StructuredBuffer<ThreeOrderSH> SH : register(t4);
 TextureCube t_specular_prefilter : register(t5);
 Texture2D t_specular_lut : register(t6);
+Texture2D t_ao : register(t7);
 
 cbuffer LightIntensity : register(b0)
 {
@@ -42,6 +43,8 @@ float4 PS(VertexOut pin) : SV_Target
 {
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.Sample(linear_sampler, pin.uv).rg;
     float3 BaseColor = t_gbuffer_base_color.Sample(linear_sampler, pin.uv).rgb;
+    float AO = t_ao.Sample(linear_sampler, pin.uv).r;
+    BaseColor = AOMultiBounce(BaseColor, AO);
     float Roughness = RoughnessMetallic.x;
     float Metallic = RoughnessMetallic.y;
 

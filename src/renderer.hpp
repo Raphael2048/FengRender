@@ -7,6 +7,7 @@
 #include "scene/camera.hpp"
 #include "render/depth_only.hpp"
 #include "render/hzb_effect.hpp"
+#include "render/gtao_effect.hpp"
 #include "render/gbuffer_output.hpp"
 #include "render/tone_mapping.hpp"
 #include "render/spot_light_effect.hpp"
@@ -55,7 +56,7 @@ namespace feng
         // depth buffer
         std::unique_ptr<DynamicDepthTexture> t_depth_;
         std::unique_ptr<DynamicPlainTexture> t_gbuffer_base_color_, t_gbuffer_normal,
-            t_gbuffer_roughness_metallic_, t_color_output_;
+            t_gbuffer_roughness_metallic_, t_color_output_, t_ao_;
         std::unique_ptr<DynamicPlainTextureMips> t_hzb_;
 
         D3D12_VIEWPORT viewport_;
@@ -73,9 +74,9 @@ namespace feng
 
         std::unique_ptr<DepthOnly> depth_only_;
         std::unique_ptr<HZBEffect> hzb_;
+        std::unique_ptr<GTAOEffect> gtao_;
         std::unique_ptr<GBufferOutput> gbuffer_output_;
         std::unique_ptr<ToneMapping> tone_mapping_;
-
 
         std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
         std::unique_ptr<SpotLightEffect> spot_light_effect_;

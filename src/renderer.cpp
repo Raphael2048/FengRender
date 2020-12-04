@@ -62,10 +62,12 @@ namespace feng
         t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
         t_depth_.reset(new DynamicDepthTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
         t_color_output_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        t_ao_.reset(new DynamicPlainTexture(GetDevice(), width_ / 2, height_ / 2, DXGI_FORMAT_R8_UNORM, false, true));
         t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         depth_only_.reset(new DepthOnly(*this));
         hzb_.reset(new HZBEffect(*this));
+        gtao_.reset(new GTAOEffect(*this));
         gbuffer_output_.reset(new GBufferOutput(*this));
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
 
@@ -149,7 +151,8 @@ namespace feng
         command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
 
         // Generate HZB
-        hzb_->Draw(*this, scene, command_list, idx);
+        hzb_->Draw(*this, command_list, idx);
+        gtao_->Draw(*this, command_list, idx);
 
         if (scene.DirectionalLight)
             directional_light_effect_->Draw(*this, scene, command_list, idx);

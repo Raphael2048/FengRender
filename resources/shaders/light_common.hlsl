@@ -64,4 +64,13 @@ float3 PBRLight(float3 N, float3 V, float3 L, float3 BaseColor, float Roughness,
     return (kD * BaseColor / PI + specular) * NdotL;
 }
 
+// [ Jimenez et al. 2016, "Practical Realtime Strategies for Accurate Indirect Occlusion" ]
+float3 AOMultiBounce( float3 BaseColor, float AO )
+{
+	float3 a =  2.0404 * BaseColor - 0.3324;
+	float3 b = -4.7951 * BaseColor + 0.6417;
+	float3 c =  2.7552 * BaseColor + 0.6903;
+	return max( AO, ( ( AO * a + b ) * AO + c ) * AO );
+}
+
 

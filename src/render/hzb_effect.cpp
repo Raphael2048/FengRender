@@ -21,7 +21,6 @@ namespace feng
 
         CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 1, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
         TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &signature_));
 
         D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc;
@@ -36,7 +35,7 @@ namespace feng
         }
     }
 
-    void HZBEffect::Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList *command_list, uint8_t idx)
+    void HZBEffect::Draw(Renderer &renderer, ID3D12GraphicsCommandList *command_list, uint8_t idx)
     {
         command_list->SetPipelineState(pso_.Get());
         command_list->SetComputeRootSignature(signature_.Get());
@@ -62,5 +61,7 @@ namespace feng
         auto transition2 = CD3DX12_RESOURCE_BARRIER::Transition(
             renderer.t_hzb_->GetResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 4);
         command_list->ResourceBarrier(1, &transition2);
+
+        renderer.t_hzb_->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
     }
 } // namespace feng

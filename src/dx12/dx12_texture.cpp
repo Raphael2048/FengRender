@@ -52,14 +52,9 @@ namespace feng
         current_state_ = state;
     }
 
-    ID3D12Resource *DynamicTexture::GetResource()
-    {
-        return buffer_.Get();
-    }
-
     DynamicPlainTexture::DynamicPlainTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT format, bool need_rtv, bool need_uav)
+        : DynamicTexture(device, width, height)
     {
-        device_ = &device;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -152,8 +147,8 @@ namespace feng
     }
 
     DynamicPlainTextureMips::DynamicPlainTextureMips(Device &device, UINT64 width, UINT64 height, uint8_t mips, DXGI_FORMAT format, bool need_rtv, bool need_uav)
+        : DynamicTexture(device, width, height)
     {
-        device_ = &device;
         mips_ = mips;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
@@ -272,8 +267,8 @@ namespace feng
     }
 
     DynamicDepthTexture::DynamicDepthTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
+        : DynamicTexture(device, width, height)
     {
-        device_ = &device;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -343,6 +338,8 @@ namespace feng
     DynamicDepthTextureCube::DynamicDepthTextureCube(Device &device, UINT64 width, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
     {
         device_ = &device;
+        width_ = width;
+        height_ = width;
         D3D12_RESOURCE_DESC texDesc;
         ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
         texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
