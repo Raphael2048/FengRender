@@ -1,8 +1,7 @@
 SamplerState linear_sampler : register(s0);
 
 Texture2D t_depth : register(t0);
-Texture2D t_gbuffer_basecolor : register(t1);
-Texture2D t_gbuffer_normal : register(t2);
+Texture2D t_gbuffer_normal : register(t1);
 // Texture2D t_hzb_buffer : register(t2);
 
 RWTexture2D<float> t_ao : register(u0);

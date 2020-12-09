@@ -62,7 +62,6 @@ namespace feng
         t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
         t_depth_.reset(new DynamicDepthTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
         t_color_output_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
-        t_ao_.reset(new DynamicPlainTexture(GetDevice(), width_ / 2, height_ / 2, DXGI_FORMAT_R8_UNORM, false, true));
         t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         depth_only_.reset(new DepthOnly(*this));
@@ -74,8 +73,11 @@ namespace feng
         if (scene.DirectionalLight) directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
         if (scene.SpotLights.size() > 0) spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
         if (scene.PointLights.size() > 0) point_light_effect_.reset(new PointLightEffect(*this, scene));
-        if (scene.SkyLight) sky_light_effect_.reset(new SkyLightEffect(skylight_cubemap, *this, command_list));
-
+        if (scene.SkyLight)
+        {
+            t_ao_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8_UNORM, false, true));
+            sky_light_effect_.reset(new SkyLightEffect(skylight_cubemap, *this, command_list));
+        }
         GetDevice().EndCommand();
         GetDevice().FlushCommand(0);
     }
@@ -152,7 +154,6 @@ namespace feng
 
         // Generate HZB
         hzb_->Draw(*this, command_list, idx);
-        gtao_->Draw(*this, command_list, idx);
 
         if (scene.DirectionalLight)
             directional_light_effect_->Draw(*this, scene, command_list, idx);
@@ -161,7 +162,10 @@ namespace feng
         if (scene.PointLights.size() > 0)
             point_light_effect_->Draw(*this, scene, command_list, idx);
         if (scene.SkyLight)
+        {
+            gtao_->Draw(*this, command_list, idx);
             sky_light_effect_->Draw(*this, scene, command_list, idx);
+        }
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

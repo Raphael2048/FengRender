@@ -1,5 +1,6 @@
 #pragma once
 #include "dx12/dx12_shader.hpp"
+#include "dx12/dx12_texture.hpp"
 namespace feng
 {
     class Renderer;
@@ -14,5 +15,7 @@ namespace feng
     private:
         ComPtr<ID3D12RootSignature> signature_;
         ComPtr<ID3D12PipelineState> pso_;
+        ComPtr<ID3D12PipelineState> pso2_;
+        std::unique_ptr<DynamicPlainTexture> ao_filter_;
     };
 } // namespace feng
