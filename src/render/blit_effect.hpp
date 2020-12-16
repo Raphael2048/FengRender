@@ -9,23 +9,12 @@ namespace feng
     class BlitEffect : public Uncopyable
     {
     public:
-        enum class BlurMode
-        {
-            Guassion,
-            Tent
-        };
-        friend class DirectionalLightEffect;
-        friend class SpotLightEffect;
-        friend class PointLightEffect;
         BlitEffect(Renderer &renderer);
 
-        void Blit(ID3D12GraphicsCommandList *command_list, DynamicPlainTexture *from, DynamicPlainTexture *to);
-        void Blur(ID3D12GraphicsCommandList *command_list, DynamicPlainTexture *from, DynamicPlainTexture *temp, BlurMode mode);
+        void AccumulateTo(Renderer &render, ID3D12GraphicsCommandList *command_list, DynamicPlainTexture *from, DynamicPlainTexture *to);
 
     private:
         ComPtr<ID3D12RootSignature> signature_;
-        ComPtr<ID3D12PipelineState> pso_blit_;
-        ComPtr<ID3D12PipelineState> pso_blur_guassion_h_;
-        ComPtr<ID3D12PipelineState> pso_blit_guassion_v_;
+        ComPtr<ID3D12PipelineState> pso_accumulate_;
     };
 } // namespace feng

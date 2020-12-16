@@ -45,14 +45,15 @@ protected:
             L"resources\\textures\\pure\\roughness.dds",
             L"resources\\textures\\pure\\metallic.dds");
 
-        for (auto &m : pica)
+        for (auto it = pica.cbegin(); it != pica.cend(); ++it)
         {
+            auto d = std::distance(pica.cbegin(), it);
             Root->AddStaticMesh(new StaticMesh(
                 Vector3(20, 20, 20),
                 Vector3(0, 90, 0),
                 Vector3(2, 2, 2),
-                m,
-                material_pica));
+                *it,
+                d > 50 ? material_pure : material_pica));
         }
 
         Root->AddStaticMesh(new StaticMesh(

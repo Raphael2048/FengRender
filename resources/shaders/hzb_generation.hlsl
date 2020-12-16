@@ -17,7 +17,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID, uint GroupThreadIndex : SV
     float2 BufferUV = (DispatchThreadId + 0.5) * DispatchIdToUV;
     float4 DeviceZ = ParentDepthTexture.GatherRed(linear_sampler, BufferUV, 0);
     float ClosestZ = max(max(DeviceZ.x, DeviceZ.y), max(DeviceZ.z, DeviceZ.w));
-
+   
     uint2 OutputPixelPos = DispatchThreadId;
     HZBOutputs[0][OutputPixelPos] = ClosestZ;
     //写入到共享内存, 加速访问

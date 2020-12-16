@@ -14,6 +14,8 @@
 #include "render/sky_light_effect.hpp"
 #include "render/point_light_effect.hpp"
 #include "render/directional_light_effect.hpp"
+#include "render/ssr_effect.hpp"
+#include "render/blit_effect.hpp"
 #include <array>
 namespace feng
 {
@@ -39,6 +41,13 @@ namespace feng
     class Renderer
     {
     public:
+        enum class GIMode
+        {
+            None,
+            ScreenSpace,
+            Voxel,
+            RayTracing,
+        };
         Renderer(const Window &window);
         Device &GetDevice() { return *device_; }
 
@@ -68,16 +77,22 @@ namespace feng
         std::unique_ptr<StaticBuffer> pp_vertex_buffer_;
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
 
+        std::unique_ptr<BlitEffect> blit_;
     private:
+        GIMode gi_mode_ = GIMode::ScreenSpace;
         std::unique_ptr<Device> device_;
         std::unique_ptr<RenderWindow> render_window_;
 
-        std::unique_ptr<DepthOnly> depth_only_;
+        // For SreenSpaceGI, GTAO, SSR, SSGI
         std::unique_ptr<HZBEffect> hzb_;
         std::unique_ptr<GTAOEffect> gtao_;
-        std::unique_ptr<GBufferOutput> gbuffer_output_;
-        std::unique_ptr<ToneMapping> tone_mapping_;
+        std::unique_ptr<SSREffect> ssr_;
 
+
+
+        std::unique_ptr<DepthOnly> depth_only_;
+        std::unique_ptr<ToneMapping> tone_mapping_;
+        std::unique_ptr<GBufferOutput> gbuffer_output_;
         std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
         std::unique_ptr<SpotLightEffect> spot_light_effect_;
         std::unique_ptr<PointLightEffect> point_light_effect_;

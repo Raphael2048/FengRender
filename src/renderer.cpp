@@ -56,7 +56,7 @@ namespace feng
         ID3D12DescriptorHeap *heaps[] = {device_->GetSRVHeap().Heap()};
         command_list->SetDescriptorHeaps(1, heaps);
 
-        // 这里GPU地址是连续的, 直接用range表示
+        // 这里GPU地址是连续的, 可以直接用range表示
         t_gbuffer_base_color_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB));
         t_gbuffer_normal.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R10G10B10A2_UNORM));
         t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
@@ -65,14 +65,21 @@ namespace feng
         t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         depth_only_.reset(new DepthOnly(*this));
-        hzb_.reset(new HZBEffect(*this));
-        gtao_.reset(new GTAOEffect(*this));
+        blit_.reset(new BlitEffect(*this));
         gbuffer_output_.reset(new GBufferOutput(*this));
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
 
-        if (scene.DirectionalLight) directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
-        if (scene.SpotLights.size() > 0) spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
-        if (scene.PointLights.size() > 0) point_light_effect_.reset(new PointLightEffect(*this, scene));
+
+        hzb_.reset(new HZBEffect(*this));
+        gtao_.reset(new GTAOEffect(*this));
+        ssr_.reset(new SSREffect(*this));
+
+        if (scene.DirectionalLight)
+            directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
+        if (scene.SpotLights.size() > 0)
+            spot_light_effect_.reset(new SpotLightEffect(*depth_only_, *this, scene));
+        if (scene.PointLights.size() > 0)
+            point_light_effect_.reset(new PointLightEffect(*this, scene));
         if (scene.SkyLight)
         {
             t_ao_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8_UNORM, false, true));
@@ -152,8 +159,6 @@ namespace feng
         float colors[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         command_list->ClearRenderTargetView(t_color_output_->GetCPURTV(), colors, 1, &scissor_rect_);
 
-        // Generate HZB
-        hzb_->Draw(*this, command_list, idx);
 
         if (scene.DirectionalLight)
             directional_light_effect_->Draw(*this, scene, command_list, idx);
@@ -166,6 +171,10 @@ namespace feng
             gtao_->Draw(*this, command_list, idx);
             sky_light_effect_->Draw(*this, scene, command_list, idx);
         }
+
+        // Generate HZB
+        hzb_->Draw(*this, command_list, idx);
+        ssr_->Draw(*this, command_list, idx);
 
         // Final Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);
@@ -203,7 +212,9 @@ namespace feng
                 0.0f,
                 16,
                 D3D12_COMPARISON_FUNC_GREATER_EQUAL,
-                D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE}};
+                D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE},
+            // CD3DX12_STATIC_SAMPLER_DESC{0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP},
+            };
         return samplers;
     }
 
