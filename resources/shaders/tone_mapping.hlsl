@@ -37,8 +37,22 @@ float3 LinearToSRGB(float3 lin)
     );
 }
 
+// https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+float3 ACESFilm(float3 color, float adapted_lum)
+{
+    const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+
+	color *= adapted_lum;
+	return (color * (A * color + B)) / (color * (C * color + D) + E);
+}
+
 float4 PS(VertexOut pin) : SV_Target
 {
     float3 color =  t_source.Sample(linear_sampler, pin.uv).rgb;
+    color = ACESFilm(color, 1);
     return float4(LinearToSRGB(color), 0.0f);
 }
