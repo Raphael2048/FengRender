@@ -48,7 +48,7 @@ float3 PBRLight(float3 N, float3 V, float3 L, float3 BaseColor, float Roughness,
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
     float HdotV = max(dot(H, V), 0.0);
-    float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), BaseColor, Roughness);
+    float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), BaseColor, Metallic);
     float NDF = DistributionGGX(NdotH, Roughness);
     float G = GeometrySchlickGGX(NdotV, Roughness) * GeometrySchlickGGX(NdotL, Roughness);
     float3 F = FresnelSchlick(F0, HdotV);

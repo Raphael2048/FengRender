@@ -64,7 +64,7 @@ namespace feng
             renderer.width_ ,
             renderer.height_ ,
             Vector2(1.0f / (renderer.width_), 1.0f / (renderer.height_)),
-            1.0f / (200 * 200)};
+            1.0f / (10 * 10)};
         command_list->SetComputeRoot32BitConstants(2, 5, &buffer, 0);
         command_list->SetComputeRootConstantBufferView(3, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         command_list->SetComputeRootDescriptorTable(4, ao_filter_->GetGPUUAV());

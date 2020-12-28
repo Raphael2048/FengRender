@@ -19,19 +19,12 @@ cbuffer SSRBuffer : register(b1)
     float2 InvHZBScreenSize;
 };
 
-#include "pp_common.hlsl"
 #define MIPS_COUNT 10
 
 float2 NDCToScreen(float2 ndc)
 {
     float2 uv = float2((ndc.x + 1) * 0.5 , (1 - ndc.y) * 0.5);
     return uv * HZBScreenSize;
-}
-
-float2 ScreenToNDC(float2 screen)
-{
-    float2 uv = screen * InvHZBScreenSize;
-    return float2(uv.x * 2 - 1, 1 - uv.y * 2);
 }
 
 // 使用投影矩阵的逆矩阵, 算深度值
