@@ -204,7 +204,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         float left_value = t_edges.SampleLevel(linear_sampler, left_uv, 0).r;
         float right_value = t_edges.SampleLevel(linear_sampler, right_uv, 0).r;
         float value = Area(float2(left, right), float2(left_value, right_value));
-        result.zw = float2(value, -value);
+        result.xy = float2(-value, value);
     }
 
     if (edge.r > 0.1f)
@@ -218,9 +218,8 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         float up_value = t_edges.SampleLevel(linear_sampler, up_uv, 0).g;
         float down_value = t_edges.SampleLevel(linear_sampler, down_uv, 0).g;
         float value = Area(float2(up, down), float2(up_value, down_value));
-        result.xy = float2(value, -value);
+        result.zw = float2(-value, value);
     }
-
     result = max(result, 0);
     t_weights[DispatchThreadId] = result;
 }

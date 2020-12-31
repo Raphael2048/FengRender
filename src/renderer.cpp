@@ -65,6 +65,7 @@ namespace feng
         t_gbuffer_roughness_metallic_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R8G8_UNORM));
         t_depth_.reset(new DynamicDepthTexture(GetDevice(), width_, height_, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT));
         t_color_output_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        t_color_output2_.reset(new DynamicPlainTexture(GetDevice(), width_, height_, DXGI_FORMAT_R16G16B16A16_FLOAT, true, true));
         t_hzb_.reset(new DynamicPlainTextureMips(GetDevice(), 1024, 512, 10, DXGI_FORMAT_R16_FLOAT, false, true));
 
         depth_only_.reset(new DepthOnly(*this));

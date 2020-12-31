@@ -17,6 +17,6 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
 
     //左, 上
     float2 delta = abs(color.xx - float2(colorL, colorT));
-    float2 edges = step(0.4, delta);
+    float2 edges = step(0.2, delta);
     t_edges[DispatchThreadId] = edges;
 }

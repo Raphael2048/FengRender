@@ -54,8 +54,8 @@ namespace feng
         auto handle = renderer.GetRenderWindow().CurrentBackBufferView();
         command_list->OMSetRenderTargets(1, &handle, FALSE, nullptr);
 
-        renderer.t_color_output_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        command_list->SetGraphicsRootDescriptorTable(0, renderer.t_color_output_->GetGPUSRV());
+        renderer.t_color_output2_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        command_list->SetGraphicsRootDescriptorTable(0, renderer.t_color_output2_->GetGPUSRV());
         
         command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
         command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
