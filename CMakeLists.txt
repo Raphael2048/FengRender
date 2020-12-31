@@ -3,28 +3,13 @@ cmake_minimum_required(VERSION 3.13)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_compile_definitions(_ENABLE_EXTENDED_ALIGNED_STORAGE )
 
-# project(D3D12MA)
-# set (Headers
-#     "${CMAKE_CURRENT_SOURCE_DIR}/deps/D3D12MemoryAllocator/src/Common.h"
-# )
-# set (Source
-#     "${CMAKE_CURRENT_SOURCE_DIR}/deps/D3D12MemoryAllocator/src/Common.cpp"
-# )
-
 
 project(Feng)
-# option(FENG_BUILD_SHARED "Build Feng as a shared library" OFF)
 
 ##### OUTPUT DIRECTORIES #####
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-# configure_file(${CMAKE_SOURCE_DIR}/deps/fallback/Bin/dxrfallbackcompiler.dll ${CMAKE_SOURCE_DIR} COPYONLY)
-# configure_file(${CMAKE_SOURCE_DIR}/deps/fallback/Bin/dxil.dll ${CMAKE_SOURCE_DIR} COPYONLY)
-# configure_file(${CMAKE_SOURCE_DIR}/deps/fallback/Bin/dxcompiler.dll ${CMAKE_SOURCE_DIR} COPYONLY)
-# file(GLOB DXMA_HEADERS CMAKE_CONFIGURE_DEPENDS] "${CMAKE_CURRENT_SOURCE_DIR}/deps/D3D12MemoryAllocator/src/D3D12MemAlloc.h")
-# file(GLOB DXMA_SOURCES CMAKE_CONFIGURE_DEPENDS] "${CMAKE_CURRENT_SOURCE_DIR}/deps/D3D12MemoryAllocator/src/D3D12MemAlloc.cpp")
-# add_library(DXMA STATIC ${DXMA_HEADERS} ${DXMA_SOURCES})
 
 file(GLOB HEADERS CMAKE_CONFIGURE_DEPENDS] "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 file(GLOB SOURCES CMAKE_CONFIGURE_DEPENDS] "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -48,9 +33,7 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/DirectXTK12 ${CMAKE_BINARY_DIR}/DirectXTK12)
-# add_subdirectory(${CMAKE_SOURCE_DIR}/deps/DirectXTex ${CMAKE_BINARY_DIR}/DirectXTex)
 
-# set(BUILD_SHARED_LIBS OFF CACHE BOOl "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
@@ -60,7 +43,6 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/assimp ${CMAKE_BINARY_DIR}/assimp)
 target_compile_options(assimp PRIVATE /WX-)
-# add_subdirectory(${CMAKE_SOURCE_DIR}/deps/D3D12MemoryAllocator ${CMAKE_BINARY_DIR}/DXMA)
 
 set_target_properties(DirectXTK12  PROPERTIES FOLDER "ThirdParty")
 
@@ -75,13 +57,10 @@ target_compile_options(FengRenderer PRIVATE /W4 /permissive- /MP /Gm-)
 endif()
 
 target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/src/)
-# target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/deps/DirectXTex/DirectXTex/)
 target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/deps/DirectXTK12/inc/)
 target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/deps/DirectXTK12/Src)
 target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/deps/assimp/include/)
-# target_include_directories(FengRenderer PUBLIC ${CMAKE_SOURCE_DIR}/deps/D3D12MemoryAllocator/src/)
 
-# target_link_libraries(FengRenderer )
 target_link_libraries(FengRenderer DirectXTK12 assimp)
 target_link_libraries(FengRenderer d3d12.lib dxgi.lib dxguid.lib d3dcompiler.lib)
 

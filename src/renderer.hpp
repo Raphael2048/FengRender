@@ -16,6 +16,7 @@
 #include "render/directional_light_effect.hpp"
 #include "render/ssr_effect.hpp"
 #include "render/blit_effect.hpp"
+#include "render/smaa_effect.hpp"
 #include <array>
 namespace feng
 {
@@ -61,6 +62,7 @@ namespace feng
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> pass_constant_buffer_;
         std::unique_ptr<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>> object_constant_buffer_;
         UINT width_, height_;
+        Vector2 screen_buffer_[2];
 
         // depth buffer
         std::unique_ptr<DynamicDepthTexture> t_depth_;
@@ -88,10 +90,11 @@ namespace feng
         std::unique_ptr<GTAOEffect> gtao_;
         std::unique_ptr<SSREffect> ssr_;
 
-
+        // PostProcessing
+        std::unique_ptr<SMAAEffect> smaa_;
+        std::unique_ptr<ToneMapping> tone_mapping_;
 
         std::unique_ptr<DepthOnly> depth_only_;
-        std::unique_ptr<ToneMapping> tone_mapping_;
         std::unique_ptr<GBufferOutput> gbuffer_output_;
         std::unique_ptr<DirectionalLightEffect> directional_light_effect_;
         std::unique_ptr<SpotLightEffect> spot_light_effect_;

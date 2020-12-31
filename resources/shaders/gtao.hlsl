@@ -36,7 +36,7 @@ float HorizonLoop(float3 ViewSpaceBegin, float3 ViewSpaveV, float2 begin, float2
     float MaxHorizon = -1.0f; // cos(pi)
     // float LastHozrion = -1.0f;
     // 在临近像素中寻找最大水平角
-    for(uint i = 1; i < 10; i++)
+    for(uint i = 1; i < 5; i++)
     {
         float2 SampleUV = (begin + dir * i) * InvScreenSize;
         if (SampleUV.x < 0 || SampleUV.x > 1 || SampleUV.y < 0 || SampleUV.y > 1) break;

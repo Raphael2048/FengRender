@@ -17,3 +17,9 @@ VertexOut VS(VertexIn vin)
     vout.uv = vin.uv;
     return vout;
 }
+
+struct ScreenSize
+{
+    float2 ScreenSize;
+    float2 InvScreenSize;
+};

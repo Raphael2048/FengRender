@@ -73,4 +73,7 @@ float3 AOMultiBounce( float3 BaseColor, float AO )
 	return max( AO, ( ( AO * a + b ) * AO + c ) * AO );
 }
 
-
+float Illumination(float3 color)
+{
+    return dot(color, float3(0.2126, 0.7152, 0.0722));
+}

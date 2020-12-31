@@ -71,11 +71,11 @@ namespace feng
         command_list_->Close();
         //
 
-        srv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), 50));
+        srv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), 100));
 
-        rtv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 50));
+        rtv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 100));
 
-        dsv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 30));
+        dsv_heap_.reset(new DirectX::DescriptorHeap(device_.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 100));
 
         fences_.resize(BACK_BUFFER_SIZE);
         for (int i = 0; i < BACK_BUFFER_SIZE; i++)

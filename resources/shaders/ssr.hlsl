@@ -127,7 +127,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
                 // 此时视为成功找到
                 float3 color = t_scene_color.SampleLevel(linear_sampler, RayPos * InvHZBScreenSize, 0).rgb;
                 color *= 1 - Roughness;
-                t_ssr[DispatchThreadId] = float4(color, 0);
+                t_ssr[DispatchThreadId] = float4(color * 0.6, 0);
                 break;
             }
             else
