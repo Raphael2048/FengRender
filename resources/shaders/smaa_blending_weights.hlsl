@@ -67,16 +67,24 @@ float SearchYDown(float2 coord)
     return min(2.0 * (i +  e), 2.0 * MAXSTEPS);
 }
 
-int ModeOf(float value)
+bool4 ModeOfSingle(float value)
 {
-    int mode = 3;
-    if (value < 0.125)
-        mode = 0;
-    else if (value < 0.5)
-        mode = 1;
-    else if (value < 0.875)
-        mode = 2;
-    return mode;
+    bool4 ret = false;
+    if (value > 0.875)
+        ret.yz = bool2(true, true);
+    else if(value > 0.5)
+        ret.z = true;
+    else if(value > 0.125)
+        ret.y = true;
+    return ret;
+}
+
+bool4 ModeOfDouble(float value1, float value2)
+{
+    bool4 ret = false;
+    ret.xy = ModeOfSingle(value1).yz;
+    ret.zw = ModeOfSingle(value2).yz;
+    return ret;
 }
 
 //  单侧L型, 另一侧没有, d表示总间隔, m表示像素中心距边缘距离
@@ -125,65 +133,101 @@ float L_L_D_Shape(float d1, float d2)
     return s1 + s2;
 }
 
+// 圆角系数, 保留物体实际的边缘; 若为0 表示全保留, 为1表示不变
+#define ROUNDING_FACTOR 0.25
 
-float Area(float2 d, float2 e)
+float Area(float2 d, bool4 left, bool4 right)
 {
-    int mode1 = ModeOf(e.x);
-    int mode2 = ModeOf(e.y);
-    float result = 0;
     // result为正, 表示将该像素点颜色扩散至上/左侧; result为负, 表示将上/左侧颜色扩散至该像素
-    if (mode1 == 0)
+    float result = 0;
+    [branch]
+    if(!left.y && !left.z)
     {
-        if (mode2 == 1)
+        [branch]
+        if(right.y && !right.z)
         {
             result = L_N_Shape(d.y + d.x + 1, d.y + 0.5);
         }
-        else if (mode2 == 2)
+        else if (!right.y && right.z)
         {
             result = -L_N_Shape(d.y + d.x + 1, d.y + 0.5);
         }
     }
-    else if (mode1 == 1)
+    else if (left.y && !left.z)
     {
-        if (mode2 == 0)
-        {
-            result = L_N_Shape(d.y + d.x + 1, d.x + 0.5);
-        }
-        else if (mode2 == 1)
-        {
-            result = L_L_S_Shape(d.x + 0.5, d.y + 0.5);
-        }
-        else
+        [branch]
+        if(right.z)
         {
             result = L_L_D_Shape(d.x + 0.5, d.y + 0.5);
         }
-    }
-    else if (mode1 == 2)
-    {
-        if (mode2 == 0)
+        else if (!right.y)
         {
-            result = -L_N_Shape(d.x + d.y + 1, d.x + 0.5);
-        }
-        else if (mode2 == 2)
-        {
-            result = -L_L_S_Shape(d.x + 0.5, d.y + 0.5);
+            result = L_N_Shape(d.y + d.x + 1, d.x + 0.5);
         }
         else
         {
+            result = L_L_S_Shape(d.x + 0.5, d.y + 0.5);
+        }
+    }
+    else if (!left.y && left.z)
+    {
+        [branch]
+        if (right.y)
+        {
             result = -L_L_D_Shape(d.x + 0.5, d.y + 0.5);
+        }
+        else if (!right.z)
+        {
+            result = -L_N_Shape(d.x + d.y + 1, d.x + 0.5);
+        }
+        else
+        {
+             result = -L_L_S_Shape(d.x + 0.5, d.y + 0.5);
         }
     }
     else
     {
-        if (mode2 == 1)
+        [branch]
+        if(right.y && !right.z)
         {
             result = -L_L_D_Shape(d.x + 0.5, d.y + 0.5);
         }
-        else if (mode2 == 2)
+        else if (!right.y && right.z)
         {
             result = L_L_D_Shape(d.x + 0.5, d.y + 0.5);
         }
     }
+
+#ifdef ROUNDING_FACTOR
+    bool apply = false;
+    if (result > 0)
+    {
+        if(d.x < d.y && left.x)
+        {
+            apply = true;
+        }
+        else if(d.x >= d.y && right.x)
+        {
+            apply = true;
+        }
+    }
+    else if (result < 0)
+    {
+        if(d.x < d.y && left.z)
+        {
+            apply = true;
+        }
+        else if(d.x >= d.y && right.z)
+        {
+            apply = true;
+        }
+    }
+    if (apply)
+    {
+        result = result * ROUNDING_FACTOR;
+    }
+#endif
+
     return result;
 
 }
@@ -198,12 +242,21 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         float left = SearchXLeft(ScreenPos);
         float right = SearchXRight(ScreenPos);
 
-        float2 left_uv = (ScreenPos + float2(-left, -0.25)) * Screen.InvScreenSize;
-        float2 right_uv = (ScreenPos + float2(right + 1, -0.25)) * Screen.InvScreenSize;
-
-        float left_value = t_edges.SampleLevel(linear_sampler, left_uv, 0).r;
-        float right_value = t_edges.SampleLevel(linear_sampler, right_uv, 0).r;
-        float value = Area(float2(left, right), float2(left_value, right_value));
+        bool4 l, r;
+#ifdef ROUNDING_FACTOR
+        float left1 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-left, -1.25)) * Screen.InvScreenSize, 0).r;
+        float left2 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-left, 0.75)) * Screen.InvScreenSize, 0).r;
+        l = ModeOfDouble(left1, left2);
+        float right1 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(right + 1, -1.25)) * Screen.InvScreenSize, 0).r;
+        float right2 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(right + 1, 0.75)) * Screen.InvScreenSize, 0).r;
+        r = ModeOfDouble(right1, right2);
+#else
+        float left_value = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-left, -0.25)) * Screen.InvScreenSize, 0).r;
+        float right_value = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(right + 1, -0.25)) * Screen.InvScreenSize, 0).r;
+        l = ModeOfSingle(left_value);
+        r = ModeOfSingle(right_value);
+#endif
+        float value = Area(float2(left, right), l, r);
         result.xy = float2(-value, value);
     }
 
@@ -212,12 +265,21 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         float up = SearchYUp(ScreenPos);
         float down = SearchYDown(ScreenPos);
 
-        float2 up_uv = (ScreenPos + float2(-0.25, -up)) * Screen.InvScreenSize;
-        float2 down_uv = (ScreenPos + float2(-0.25, down + 1)) * Screen.InvScreenSize;
-
-        float up_value = t_edges.SampleLevel(linear_sampler, up_uv, 0).g;
-        float down_value = t_edges.SampleLevel(linear_sampler, down_uv, 0).g;
-        float value = Area(float2(up, down), float2(up_value, down_value));
+        bool4 u, d;
+#ifdef ROUNDING_FACTOR
+        float up1 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-1.25, -up)) * Screen.InvScreenSize, 0).g;
+        float up2 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(0.75, -up)) * Screen.InvScreenSize, 0).g;
+        float down1 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-1.25, down + 1)) * Screen.InvScreenSize, 0).g;
+        float down2 = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(0.75, down + 1)) * Screen.InvScreenSize, 0).g;
+        u = ModeOfDouble(up1, up2);
+        d = ModeOfDouble(down1, down2);
+#else
+        float up_value = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-0.25, -up)) * Screen.InvScreenSize, 0).g;
+        float down_value = t_edges.SampleLevel(linear_sampler, (ScreenPos + float2(-0.25, down + 1)) * Screen.InvScreenSize, 0).g;
+        u = ModeOfSingle(up_value);
+        d = ModeOfSingle(down_value);
+#endif
+        float value = Area(float2(up, down), u, d);
         result.zw = float2(-value, value);
     }
     result = max(result, 0);

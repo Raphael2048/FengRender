@@ -9,7 +9,7 @@ namespace feng
     {
         auto samplers = renderer.GetStaticSamplers();
         t_edge_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R8G8_UNORM, true, true));
-        t_weight_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R8G8B8A8_SNORM, true, true));
+        t_weight_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R8G8B8A8_UNORM, true, true));
        
         {
             CD3DX12_ROOT_PARAMETER slotRootParameter[2];
@@ -94,7 +94,7 @@ namespace feng
         t_edge_->TransitionState(command_list, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         command_list->SetComputeRootDescriptorTable(0, renderer.t_color_output_->GetGPUSRV());
         command_list->SetComputeRootDescriptorTable(1, t_edge_->GetGPUUAV());
-        command_list->Dispatch(renderer.width_ / 8, renderer.height_ / 8, 1);
+        command_list->Dispatch(renderer.width_ / 16, renderer.height_ / 8, 1);
 
         command_list->SetPipelineState(pso_weight_.Get());
         command_list->SetComputeRootSignature(signature_weight_.Get());
