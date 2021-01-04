@@ -81,7 +81,7 @@ bool4 ModeOfSingle(float value)
 
 bool4 ModeOfDouble(float value1, float value2)
 {
-    bool4 ret = false;
+    bool4 ret;
     ret.xy = ModeOfSingle(value1).yz;
     ret.zw = ModeOfSingle(value2).yz;
     return ret;
@@ -182,7 +182,7 @@ float Area(float2 d, bool4 left, bool4 right)
         }
         else
         {
-             result = -L_L_S_Shape(d.x + 0.5, d.y + 0.5);
+            result = -L_L_S_Shape(d.x + 0.5, d.y + 0.5);
         }
     }
     else
@@ -213,11 +213,11 @@ float Area(float2 d, bool4 left, bool4 right)
     }
     else if (result < 0)
     {
-        if(d.x < d.y && left.z)
+        if(d.x < d.y && left.w)
         {
             apply = true;
         }
-        else if(d.x >= d.y && right.z)
+        else if(d.x >= d.y && right.w)
         {
             apply = true;
         }
