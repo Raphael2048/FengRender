@@ -66,8 +66,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     float3 ViewSpaceDir = mul(R, (float3x3)PC.view);
     float ViewSpaceBeginZ = ViewSpacePos.z;
     float ViewSpaceDirZ = ViewSpaceDir.z;
-    // 忽略朝摄影机方向反射的光线
-    if (ViewSpaceDirZ > 0) return;
+
     float2 RcpDir = rcp(ScreenSpaceDir);
     float RcpDirZ = rcp(ViewSpaceDirZ);
     // 计算光线追踪的终点位置, t的最大值
@@ -78,8 +77,9 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         bounds.y = RcpDir.y >= 0 ? HZBScreenSize.y - 0.5 : 0.5;
         float2 dist = (bounds - ScreenSpaceBegin) * RcpDir;
         
-        float MaxDistance = NDCDepthToViewDepth(0.00000024);
-        float distZ = (MaxDistance -  ViewSpaceBeginZ) * RcpDirZ;
+        // 朝屏幕外或者屏幕内
+        float MaxDistance = NDCDepthToViewDepth(ViewSpaceDirZ <= 0 ? 0.00000024 : 0.999);
+        float distZ = (MaxDistance - ViewSpaceBeginZ) * RcpDirZ;
         tMax = min(min(dist.x, dist.y), distZ);
     }
     const int MaxMipLevel = 9;
@@ -105,10 +105,10 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     float t1 = (DispatchThreadId.x + CrossStep.x - ScreenSpaceBegin.x) * RcpDir.x;
     float t2 = (DispatchThreadId.y + CrossStep.y - ScreenSpaceBegin.y) * RcpDir.y;
     t = min(t1, t2);
-
     // 计算位置时向前移动一点,  计算出的所有坐标都是位于边界的点, 
     // 这样在转化为屏幕上格子坐标时, 可正好转化为当前射线求交判断的格子目标
     RayPos = ScreenSpaceBegin + t * ScreenSpaceDir + CrossSign * 0.0001;
+    // t_ssr[DispatchThreadId] = float4(RayPos , ScreenSpaceDir);
     while((t < tMax) && (IterCount < 36))
     {
         IterCount++;
@@ -121,7 +121,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         if (ViewSpaceSampleZ > RayZ)
         {
             // 深度值差距过大, 认为是遮挡
-            // if (ViewSpaceSampleZ - RayZ > 10) return;
+            if (ViewSpaceSampleZ - RayZ > 20) return;
             if (MipLevel == 0)
             {
                 // 此时视为成功找到
