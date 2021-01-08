@@ -53,7 +53,7 @@ protected:
                 Vector3(0, 90, 0),
                 Vector3(2, 2, 2),
                 *it,
-                d > 50 ? material_pure : material_pica));
+                material_pica));
         }
 
         Root->AddStaticMesh(new StaticMesh(

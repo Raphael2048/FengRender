@@ -109,7 +109,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     // 这样在转化为屏幕上格子坐标时, 可正好转化为当前射线求交判断的格子目标
     RayPos = ScreenSpaceBegin + t * ScreenSpaceDir + CrossSign * 0.0001;
     // t_ssr[DispatchThreadId] = float4(RayPos , ScreenSpaceDir);
-    while((t < tMax) && (IterCount < 36))
+    while((t < tMax) && (IterCount < 48))
     {
         IterCount++;
         int2 MipCoord = (int2)RayPos >> MipLevel;
