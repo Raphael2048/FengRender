@@ -16,16 +16,17 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     float B = t_weights.mips[0][DispatchThreadId + int2(0, 1)].g;
 
     float4 a = float4(TL.r, B, TL.b, R);
-    float sum = dot(a, 1.0);
+    float4 w = a * a * a;
+    float sum = dot(w, 1.0);
     [branch]
     if (sum > 0) {
         float4 o = a * Screen.InvScreenSize.yyxx;
         float4 color = 0;
 
-        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2(0.0, -o.r), 0), a.r, color);
-        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2( 0.0, o.g), 0), a.g, color);
-        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2(-o.b, 0.0), 0), a.b, color);
-        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2( o.a, 0.0), 0), a.a, color);
+        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2(0.0, -o.r), 0), w.r, color);
+        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2( 0.0, o.g), 0), w.g, color);
+        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2(-o.b, 0.0), 0), w.b, color);
+        color = mad(t_scene_color.SampleLevel(linear_sampler, uv + float2( o.a, 0.0), 0), w.a, color);
         t_output[DispatchThreadId] = color/sum;
     } else
     {

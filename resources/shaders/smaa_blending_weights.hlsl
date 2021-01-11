@@ -9,7 +9,7 @@ RWTexture2D<float4> t_weights : register(u0);
 #include "pp_common.hlsl"
 ConstantBuffer<ScreenSize> Screen : register(b0);
 
-#define MAXSTEPS 3
+#define MAXSTEPS 10
 
 float SearchXLeft(float2 coord)
 {

@@ -18,3 +18,4 @@ function(add_test TEST_DIR TEST_NAME)
 endfunction(add_test)
 
 add_test(demo Demo)
+add_test(demo2 Demo2)
