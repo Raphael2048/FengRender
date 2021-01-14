@@ -13,8 +13,6 @@ namespace feng
         {
             Vector2 ScreenSize;
             Vector2 InvScreenSize;
-            Vector2 HZBSize;
-            Vector2 InvHZBSize;
         };
         SSREffect(Renderer& renderer);
 

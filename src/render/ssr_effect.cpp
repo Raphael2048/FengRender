@@ -29,7 +29,7 @@ namespace feng
             
             slotRootParameter[4].InitAsConstantBufferView(0);
 
-            slotRootParameter[5].InitAsConstants(8, 1);
+            slotRootParameter[5].InitAsConstants(40, 1);
 
             CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(6, slotRootParameter, 1, samplers.data(),
                                                     D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -42,11 +42,9 @@ namespace feng
             psoDesc.pRootSignature = signature_.Get();
             TRY(renderer.GetDevice().GetDevice()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pso_)));
         }
-        t_ssr_.reset(new DynamicPlainTexture(renderer.GetDevice(), 1024, 512, DXGI_FORMAT_R32G32B32A32_FLOAT, false, true));
+        t_ssr_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R32G32B32A32_FLOAT, false, true));
         info_.ScreenSize = Vector2(renderer.width_, renderer.height_);
         info_.InvScreenSize = Vector2(1.0f / renderer.width_, 1.0f / renderer.height_);
-        info_.HZBSize = Vector2(1024, 512);
-        info_.InvHZBSize = Vector2(1 / 1024.0f, 1 / 512.0f);
     }
 
     void SSREffect::Draw(Renderer &renderer, ID3D12GraphicsCommandList *command_list, uint8_t idx)
@@ -61,8 +59,9 @@ namespace feng
         t_ssr_->TransitionState(command_list, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         command_list->SetComputeRootDescriptorTable(3, t_ssr_->GetGPUUAV());
         command_list->SetComputeRootConstantBufferView(4, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
-        command_list->SetComputeRoot32BitConstants(5, 8, &info_, 0);
-        command_list->Dispatch(1024 / 8, 512 / 8, 1);
+        command_list->SetComputeRoot32BitConstants(5, 4, &info_, 0);
+        command_list->SetComputeRoot32BitConstants(5, 36, renderer.hzb_size_pos_.data(), 4);
+        command_list->Dispatch(renderer.width_ / 8, renderer.height_ / 8, 1);
 
         renderer.blit_->AccumulateTo(renderer, command_list, t_ssr_.get(), renderer.t_color_output_.get());
     }

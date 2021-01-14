@@ -67,8 +67,8 @@ namespace feng
         // depth buffer
         std::unique_ptr<DynamicDepthTexture> t_depth_;
         std::unique_ptr<DynamicPlainTexture> t_gbuffer_base_color_, t_gbuffer_normal,
-            t_gbuffer_roughness_metallic_, t_color_output_, t_color_output2_, t_ao_;
-        std::unique_ptr<DynamicPlainTextureMips> t_hzb_;
+            t_gbuffer_roughness_metallic_, t_color_output_, t_color_output2_, t_ao_, t_hzb_;
+        // std::unique_ptr<DynamicPlainTextureMips> t_hzb_;
 
         D3D12_VIEWPORT viewport_;
         D3D12_RECT scissor_rect_;
@@ -80,6 +80,7 @@ namespace feng
         D3D12_VERTEX_BUFFER_VIEW pp_vertex_buffer_view_;
 
         std::unique_ptr<BlitEffect> blit_;
+        std::vector<uint32_t> hzb_size_pos_;
     private:
         GIMode gi_mode_ = GIMode::ScreenSpace;
         std::unique_ptr<Device> device_;

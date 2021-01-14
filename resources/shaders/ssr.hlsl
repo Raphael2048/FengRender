@@ -15,16 +15,13 @@ cbuffer SSRBuffer : register(b1)
 {
     float2 ScreenSize;
     float2 InvScreenSize;
-    float2 HZBScreenSize;
-    float2 InvHZBScreenSize;
+    uint4 HZBPosAndSize[9];
 };
-
-#define MIPS_COUNT 10
 
 float2 NDCToScreen(float2 ndc)
 {
     float2 uv = float2((ndc.x + 1) * 0.5 , (1 - ndc.y) * 0.5);
-    return uv * HZBScreenSize;
+    return uv * ScreenSize;
 }
 
 // 使用投影矩阵的逆矩阵, 算深度值
@@ -33,15 +30,19 @@ float NDCDepthToViewDepth(float z)
     return PC.inv_proj._43 / (PC.inv_proj._34 * z + PC.inv_proj._44);
 }
 
+float LoadDepthAt(int2 Pos, int MipLevel)
+{
+    return t_hzb.Load(int3(HZBPosAndSize[MipLevel].xy + Pos, 0));
+}
 
 [numthreads(8, 8, 1)]
 void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
 {
     t_ssr[DispatchThreadId] = float4(0, 0, 0, 0);
-    float2 uv = InvHZBScreenSize * (float2(DispatchThreadId) + 0.5);
+    float2 uv = InvScreenSize * (float2(DispatchThreadId) + 0.5);
     float2 RoughnessMetallic = t_gbuffer_roghness_metallic.SampleLevel(linear_sampler, uv, 0).rg;
     float3 BaseColor = t_gbuffer_base_color.SampleLevel(linear_sampler, uv, 0).rgb;
-    float NDCSpaceZ = t_hzb.mips[0][DispatchThreadId].r;
+    float NDCSpaceZ = LoadDepthAt(DispatchThreadId, 0);
     if (NDCSpaceZ < 0.0001) return;
     float3 NDCSpacePos = float3(uv.x * 2.0f - 1.0f, 1.0f - uv.y * 2.0f, NDCSpaceZ);
     float4 WorldSpacePos = mul(float4(NDCSpacePos, 1.0f), PC.inv_view_proj);
@@ -73,8 +74,8 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     float tMax;
     {
         float2 bounds;
-        bounds.x = RcpDir.x >= 0 ? HZBScreenSize.x - 0.5 : 0.5;
-        bounds.y = RcpDir.y >= 0 ? HZBScreenSize.y - 0.5 : 0.5;
+        bounds.x = RcpDir.x >= 0 ? ScreenSize.x - 0.5 : 0.5;
+        bounds.y = RcpDir.y >= 0 ? ScreenSize.y - 0.5 : 0.5;
         float2 dist = (bounds - ScreenSpaceBegin) * RcpDir;
         
         // 朝屏幕外或者屏幕内
@@ -82,7 +83,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         float distZ = (MaxDistance - ViewSpaceBeginZ) * RcpDirZ;
         tMax = min(min(dist.x, dist.y), distZ);
     }
-    const int MaxMipLevel = 9;
+    const int MaxMipLevel = 8;
 
     float t = 0;
 
@@ -97,7 +98,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         ScreenSpaceDir.x < 0 ? -1 : 1,
         ScreenSpaceDir.y < 0 ? -1 : 1
     );
-
+    // t_ssr[DispatchThreadId] = float4(uv, 0, 1);
     // t_ssr[DispatchThreadId] = float4(ViewSpaceBeginZ, NDCDepthToViewDepth(NDCSpaceZ) , 0, 0);
 
     // 下一采样点的两个潜在选择, 选择最近的那个
@@ -113,7 +114,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
     {
         IterCount++;
         int2 MipCoord = (int2)RayPos >> MipLevel;
-        float SampleZ = t_hzb.mips[MipLevel][MipCoord].r;
+        float SampleZ = LoadDepthAt(MipCoord, MipLevel);
         float ViewSpaceSampleZ = NDCDepthToViewDepth(SampleZ);
         float RayZ = ViewSpaceBeginZ + t * ViewSpaceDirZ;
 
@@ -125,7 +126,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
             if (MipLevel == 0)
             {
                 // 此时视为成功找到
-                float3 color = t_scene_color.SampleLevel(linear_sampler, RayPos * InvHZBScreenSize, 0).rgb;
+                float3 color = t_scene_color.SampleLevel(linear_sampler, RayPos * InvScreenSize, 0).rgb;
                 color *= 1 - Roughness;
                 float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), BaseColor, RoughnessMetallic.y);
                 float3 H = normalize(R + V);
