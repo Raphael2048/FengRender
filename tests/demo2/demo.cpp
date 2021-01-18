@@ -82,7 +82,7 @@ protected:
             Vector3::Zero,
             Vector3::One,
             cornell[3],
-            material_red
+            material_pica
         ));
         Root->AddStaticMesh(new StaticMesh(
             Vector3::Zero,
