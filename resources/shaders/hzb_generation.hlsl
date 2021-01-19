@@ -16,7 +16,6 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID, uint GroupThreadIndex : SV
 
     uint2 OutputPixelPos = DispatchThreadId;
 
-    [unroll]
     for(uint MipLevel = 1; MipLevel < 9; MipLevel++)
     {
         GroupMemoryBarrierWithGroupSync();

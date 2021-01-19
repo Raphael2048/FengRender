@@ -48,7 +48,7 @@ namespace feng
         }
     }
 
-    void HZBEffect::Draw(Renderer &renderer, ID3D12GraphicsCommandList *command_list, uint8_t idx)
+    void HZBEffect::Draw(Renderer &renderer, ID3D12GraphicsCommandList *command_list)
     {
         command_list->SetPipelineState(pso_.Get());
         command_list->SetComputeRootSignature(signature_.Get());

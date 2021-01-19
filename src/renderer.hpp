@@ -15,6 +15,7 @@
 #include "render/point_light_effect.hpp"
 #include "render/directional_light_effect.hpp"
 #include "render/ssr_effect.hpp"
+#include "render/ssgi_effect.hpp"
 #include "render/blit_effect.hpp"
 #include "render/smaa_effect.hpp"
 #include <array>
@@ -90,6 +91,7 @@ namespace feng
         std::unique_ptr<HZBEffect> hzb_;
         std::unique_ptr<GTAOEffect> gtao_;
         std::unique_ptr<SSREffect> ssr_;
+        std::unique_ptr<SSGIEffect> ssgi_;
 
         // PostProcessing
         std::unique_ptr<SMAAEffect> smaa_;

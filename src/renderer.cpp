@@ -78,6 +78,7 @@ namespace feng
         hzb_.reset(new HZBEffect(*this));
         gtao_.reset(new GTAOEffect(*this));
         ssr_.reset(new SSREffect(*this));
+        ssgi_.reset(new SSGIEffect(*this));
 
         if (scene.DirectionalLight)
             directional_light_effect_.reset(new DirectionalLightEffect(*depth_only_, *this, scene));
@@ -177,9 +178,10 @@ namespace feng
         }
 
         // Generate HZB
-        hzb_->Draw(*this, command_list, idx);
+        hzb_->Draw(*this, command_list);
         ssr_->Draw(*this, command_list, idx);
-
+        ssgi_->Draw(*this, command_list, idx);
+        ssr_->Accumate(*this, command_list);
 
         smaa_->Draw(*this, command_list, idx);
         // Final ACES Tonemapping

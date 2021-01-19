@@ -25,7 +25,7 @@ namespace feng
             CD3DX12_DESCRIPTOR_RANGE cbvTable4;
             cbvTable4.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
             slotRootParameter[3].InitAsDescriptorTable(1, &cbvTable4);
-            
+
             slotRootParameter[4].InitAsConstantBufferView(0);
 
             slotRootParameter[5].InitAsConstants(40, 1);
@@ -42,57 +42,10 @@ namespace feng
             TRY(renderer.GetDevice().GetDevice()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pso_)));
         }
 
-        {
-            CD3DX12_ROOT_PARAMETER slotRootParameter[2];
-            CD3DX12_DESCRIPTOR_RANGE cbvTable;
-            cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
-            slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
-
-            slotRootParameter[1].InitAsConstants(4, 0);
-
-            CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 1, samplers.data(),
-                                                    D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-            TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &signature_blur_));
-
-            auto shader1 = std::make_unique<GraphicsShader>(L"resources\\shaders\\ssr_blur.hlsl", nullptr);
-            D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-            ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-
-            psoDesc.InputLayout = renderer.pp_input_layout_;
-            psoDesc.pRootSignature = signature_blur_.Get();
-            shader1->FillPSO(psoDesc);
-
-            psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-            psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-
-            // No depth test
-            psoDesc.DepthStencilState.DepthEnable = false;
-            psoDesc.SampleMask = UINT_MAX;
-            psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-            psoDesc.NumRenderTargets = 1;
-            // Final Output
-            psoDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
-            psoDesc.SampleDesc.Count = 1;
-            psoDesc.SampleDesc.Quality = 0;
-            TRY(renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_blur_v_)));
-
-
-            D3D_SHADER_MACRO macro[] = {
-                {
-                    "DIRECTION_H", "1"
-                },
-                nullptr
-            };
-            auto shader2 = std::make_unique<GraphicsShader>(L"resources\\shaders\\ssr_blur.hlsl", macro);
-            shader2->FillPSO(psoDesc);
-            TRY(renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_blur_h_)));
-        }
-
         t_ssr_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R16G16B16A16_FLOAT, true, true));
         t_temp_.reset(new DynamicPlainTexture(renderer.GetDevice(), renderer.width_, renderer.height_, DXGI_FORMAT_R16G16B16A16_FLOAT, true, false));
         info_.ScreenSize = Vector2(renderer.width_, renderer.height_);
         info_.InvScreenSize = Vector2(1.0f / renderer.width_, 1.0f / renderer.height_);
-        
     }
 
     void SSREffect::Draw(Renderer &renderer, ID3D12GraphicsCommandList *command_list, uint8_t idx)
@@ -111,26 +64,13 @@ namespace feng
         command_list->SetComputeRoot32BitConstants(5, 36, renderer.hzb_size_pos_.data(), 4);
         command_list->Dispatch(renderer.width_ / 8, renderer.height_ / 8, 1);
 
-        t_ssr_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_temp_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
-        command_list->SetPipelineState(pso_blur_h_.Get());
-        command_list->SetGraphicsRootSignature(signature_blur_.Get());
-        command_list->SetGraphicsRootDescriptorTable(0, t_ssr_->GetGPUSRV());
-        command_list->SetGraphicsRoot32BitConstants(1, 4, &info_, 0);
-        auto temp_rtv = t_temp_->GetCPURTV();
-        command_list->OMSetRenderTargets(1, &temp_rtv, FALSE, nullptr);
-        command_list->IASetVertexBuffers(0, 1, &renderer.pp_vertex_buffer_view_);
-        command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        command_list->DrawInstanced(3, 1, 0, 0);
+        renderer.blit_->GaussianBlur(renderer, command_list, t_ssr_.get(), t_temp_.get(), 3);
+    }
 
-        command_list->SetPipelineState(pso_blur_v_.Get());
-        t_ssr_->TransitionState(command_list, D3D12_RESOURCE_STATE_RENDER_TARGET);
-        t_temp_->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        auto ssr_rtv = t_ssr_->GetCPURTV();
-        command_list->OMSetRenderTargets(1, &ssr_rtv, FALSE, nullptr);
-        command_list->SetGraphicsRootDescriptorTable(0, t_temp_->GetGPUSRV());
-        command_list->DrawInstanced(3, 1, 0, 0);
-
+    void SSREffect::Accumate(Renderer &renderer, ID3D12GraphicsCommandList* command_list)
+    {
         renderer.blit_->AccumulateTo(renderer, command_list, t_ssr_.get(), renderer.t_color_output_.get());
     }
+
+    
 } // namespace feng
