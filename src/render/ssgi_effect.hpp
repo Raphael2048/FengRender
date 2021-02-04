@@ -13,8 +13,9 @@ namespace feng
 
         void Draw(Renderer &renderer, ID3D12GraphicsCommandList* command_list, uint8_t idx);
     private:
-        ComPtr<ID3D12RootSignature> signature_reduction_;
-        ComPtr<ID3D12PipelineState> pso_reduction_;
+        ComPtr<ID3D12RootSignature> signature_reduction_, signature_raycast_;
+        ComPtr<ID3D12PipelineState> pso_reduction_, pso_raycast_;
         std::unique_ptr<DynamicPlainTextureMips> t_reduction_;
+        std::unique_ptr<DynamicPlainTexture> t_ssgi, t_temp_;
     };
 }
