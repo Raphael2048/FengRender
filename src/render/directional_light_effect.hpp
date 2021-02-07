@@ -10,6 +10,7 @@ namespace feng
     class Scene;
     class DirectionalLightEffect
     {
+        friend class VolumeEffect;
     public:
         DirectionalLightEffect(DepthOnly & depthEffect, Renderer &renderer, const Scene& scene);
 

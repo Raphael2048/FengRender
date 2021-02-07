@@ -80,6 +80,18 @@ namespace feng
         std::vector<int> rtv_heap_index_each_;
     };
 
+    class DynamicPlain3DTexture : public DynamicTexture
+    {
+    public:
+        DynamicPlain3DTexture(Device &device, UINT64 width, UINT64 height, UINT64 depth, DXGI_FORMAT format);
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAV();
+    private:
+        UINT64 depth_;
+        int srv_heap_index_ = -1;
+        int uav_heap_index_ = -1;
+    };
+
     class DynamicDepthTexture : public DynamicTexture
     {
     public:

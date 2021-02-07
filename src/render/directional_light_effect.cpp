@@ -219,9 +219,9 @@ namespace feng
         command_list->RSSetScissorRects(1, &renderer.scissor_rect_);
         command_list->SetGraphicsRootSignature(light_pass_signature_.Get());
 
-        t_shadow_split[0]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_shadow_split[1]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        t_shadow_split[2]->TransitionState(command_list, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        t_shadow_split[0]->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
+        t_shadow_split[1]->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
+        t_shadow_split[2]->TransitionState(command_list, D3D12_RESOURCE_STATE_GENERIC_READ);
 
         auto color_rtv = renderer.t_color_output_->GetCPURTV();
         command_list->OMSetRenderTargets(1, &color_rtv, FALSE, nullptr);

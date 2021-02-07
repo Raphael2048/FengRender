@@ -10,7 +10,7 @@ namespace feng
     public:
         friend class DirectionalLightEffect;
         // HDR linear color, unit : (W/m^2) or (lux)
-        DirectionalLight(const Vector3& direction, const Color &color);
+        DirectionalLight(const Vector3& direction, const Color &color, float shadow_distance = 100.0f);
 
         virtual void Update(float time) override;
 
@@ -28,7 +28,7 @@ namespace feng
     private:
         Vector3 direction_;
         Color color_;
-        float shadow_distance_ = 200.0f;
+        float shadow_distance_;
     };
 
     class SpotLight : public Node

@@ -266,6 +266,70 @@ namespace feng
         return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_each_[mip]);
     }
 
+    DynamicPlain3DTexture::DynamicPlain3DTexture(Device &device, UINT64 width, UINT64 height, UINT64 depth, DXGI_FORMAT format)
+        : DynamicTexture(device, width, height), depth_(depth)
+    {
+        D3D12_RESOURCE_DESC texDesc;
+        ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
+        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+        texDesc.Alignment = 0;
+        texDesc.Width = width;
+        texDesc.Height = height;
+        texDesc.DepthOrArraySize = depth;
+        texDesc.MipLevels = 1;
+        texDesc.Format = format;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+        auto HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        TRY(device.GetDevice()->CreateCommittedResource(
+            &HeapProp,
+            D3D12_HEAP_FLAG_NONE,
+            &texDesc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&buffer_)));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+        srvDesc.Texture3D.MostDetailedMip = 0;
+        srvDesc.Texture3D.MipLevels = 1;
+        srvDesc.Texture3D.ResourceMinLODClamp = 0.0f;
+        srv_heap_index_ = device.GetSRVAllocIndex();
+
+        device.GetDevice()->CreateShaderResourceView(
+            buffer_.Get(),
+            &srvDesc,
+            device.GetSRVHeap().GetCpuHandle(srv_heap_index_));
+
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+        uavDesc.Format = format;
+        uavDesc.Texture3D.MipSlice = 0;
+        uavDesc.Texture3D.FirstWSlice = 0;
+        uavDesc.Texture3D.WSize = depth;
+        uav_heap_index_ = device.GetSRVAllocIndex();
+        device.GetDevice()->CreateUnorderedAccessView(
+            buffer_.Get(), nullptr,
+            &uavDesc,
+            device.GetSRVHeap().GetCpuHandle(uav_heap_index_));
+
+        current_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
+    }
+    
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlain3DTexture::GetGPUSRV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(srv_heap_index_);
+    }
+    D3D12_GPU_DESCRIPTOR_HANDLE DynamicPlain3DTexture::GetGPUUAV()
+    {
+        return device_->GetSRVHeap().GetGpuHandle(uav_heap_index_);
+    }
+
     DynamicDepthTexture::DynamicDepthTexture(Device &device, UINT64 width, UINT64 height, DXGI_FORMAT typeless_format, DXGI_FORMAT read_format, DXGI_FORMAT write_format)
         : DynamicTexture(device, width, height)
     {

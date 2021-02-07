@@ -8,7 +8,7 @@ class Demo : public Application
 protected:
     void OnInit() override
     {
-        Root->SetCamera(new Camera(Vector3{10, 0, 20}, Vector3{0, 0, 0}, 1.0f, 300.0f, 60.0f, 1280.0f / 720.0f));
+        Root->SetCamera(new Camera(Vector3{10, 0, 20}, Vector3{0, 0, 0}, 10.0f, 100.0f, 60.0f, 1280.0f / 720.0f));
 
         Root->SetDirectionalLight(new DirectionalLight(Vector3(1, -5, -2), Color(3, 2, 2)));
         // Root->SetSkyLight(new SkyLight(L"resources\\textures\\scubemap_street.dds", 1));

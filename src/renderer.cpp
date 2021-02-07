@@ -74,6 +74,7 @@ namespace feng
 
         tone_mapping_ = std::make_unique<ToneMapping>(*this);
         smaa_ = std::make_unique<SMAAEffect>(*this);
+        volume_effect_.reset(new VolumeEffect(*this));
 
         hzb_.reset(new HZBEffect(*this));
         gtao_.reset(new GTAOEffect(*this));
@@ -183,6 +184,8 @@ namespace feng
         // ssgi_->Draw(*this, command_list, idx);
         ssr_->Accumate(*this, command_list);
 
+        if (scene.DirectionalLight)
+            volume_effect_->Draw(*this, *directional_light_effect_, command_list, idx);
         smaa_->Draw(*this, command_list, idx);
         // Final ACES Tonemapping
         tone_mapping_->Draw(*this, command_list, idx);

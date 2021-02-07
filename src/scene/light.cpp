@@ -2,8 +2,8 @@
 
 namespace feng
 {
-    DirectionalLight::DirectionalLight(const Vector3 &direction, const Color &color)
-        : Node(Vector3::Zero, Vector3::Zero, Vector3::One), color_(color), direction_(direction)
+    DirectionalLight::DirectionalLight(const Vector3 &direction, const Color &color, float shadow_distance)
+        : Node(Vector3::Zero, Vector3::Zero, Vector3::One), color_(color), direction_(direction), shadow_distance_(shadow_distance)
     {
         direction_.Normalize();
     }

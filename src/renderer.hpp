@@ -18,6 +18,7 @@
 #include "render/ssgi_effect.hpp"
 #include "render/blit_effect.hpp"
 #include "render/smaa_effect.hpp"
+#include "render/volume_effect.hpp"
 #include <array>
 namespace feng
 {
@@ -103,6 +104,7 @@ namespace feng
         std::unique_ptr<SpotLightEffect> spot_light_effect_;
         std::unique_ptr<PointLightEffect> point_light_effect_;
         std::unique_ptr<SkyLightEffect> sky_light_effect_;
+        std::unique_ptr<VolumeEffect> volume_effect_;
     };
 
 } // namespace feng
