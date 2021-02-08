@@ -41,6 +41,8 @@ float GetAt(float3 ndc, int index)
     return  t_shadowmap_splits[index].SampleCmpLevelZero(shadow_sampler, float2(u, v) , ndc.z + 0.001f).r;
 }
 
+
+#include "random_common.hlsl"
 // Media Phase Function G Value
 static const float GParameter = 0.9f;
 
@@ -82,9 +84,10 @@ void CS(uint3 DispatchThreadId : SV_DISPATCHTHREADID)
 
     float3 color = float3(DispatchThreadId) / float3(160, 90, 64);
     // TODO:: 
-    
+    float v = GradientNoise3D_ALU(WorldSpacePos.xyz * 0.05f, false, 0);
+
     // Alpha: density of volume. sigma t value.
-    t_volume_density[DispatchThreadId] = float4(d * light_color.rgb, 1);
+    t_volume_density[DispatchThreadId] = float4(d * light_color.rgb, abs(v));
     // t_volume_density[DispatchThreadId] = float4(WorldSpacePos.xyz, 1);
     // t_volume_density[DispatchThreadId] = float4(uvz, 1.0f);
     // t_volume_density[DispatchThreadId] = float4(color, 1.0);
