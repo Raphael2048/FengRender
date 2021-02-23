@@ -41,8 +41,15 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
         depth = ThisDepth;
 
         float T = exp(-DeltaDepth * SigmaT * density.a);
+
+        // AccumLight.rgb += density.rgb * SigmaS * DeltaDepth * AccumLight.a;
+
+        // 穿过一个切片的积分值, 解析解, 更加精确
+        float3 scat = density.rgb * SigmaS;
+        float3 intergScatt = (scat - scat * T) / SigmaT;
+        AccumLight.rgb += intergScatt * AccumLight.a;
         AccumLight.a *= T;
-        AccumLight.rgb += density.rgb * SigmaS * DeltaDepth * AccumLight.a;
+        
         t_volume_accum[int3(DispatchThreadId, i)] = AccumLight;
     }
 }

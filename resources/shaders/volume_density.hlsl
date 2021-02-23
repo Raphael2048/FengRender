@@ -82,12 +82,11 @@ void CS(uint3 DispatchThreadId : SV_DISPATCHTHREADID)
 
     float d = HGPhase(CosineTheta, GParameter) * multiper;
 
-    float3 color = float3(DispatchThreadId) / float3(160, 90, 64);
     // TODO:: 
     float v = GradientNoise3D_ALU(WorldSpacePos.xyz * 0.05f, false, 0);
 
     // Alpha: density of volume. sigma t value.
-    t_volume_density[DispatchThreadId] = float4(d * light_color.rgb, abs(v));
+    t_volume_density[DispatchThreadId] = float4(d * light_color.rgb, clamp(abs(v), 0.1, 1));
     // t_volume_density[DispatchThreadId] = float4(WorldSpacePos.xyz, 1);
     // t_volume_density[DispatchThreadId] = float4(uvz, 1.0f);
     // t_volume_density[DispatchThreadId] = float4(color, 1.0);
