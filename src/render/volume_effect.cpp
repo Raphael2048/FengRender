@@ -26,7 +26,7 @@ namespace feng
 
             slotRootParameter[3].InitAsConstantBufferView(1);
 
-            slotRootParameter[4].InitAsConstants(3, 2);
+            slotRootParameter[4].InitAsConstants(4, 2);
 
             CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(5, slotRootParameter, 2, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -112,6 +112,10 @@ namespace feng
         command_list->SetComputeRootConstantBufferView(2, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         command_list->SetComputeRootConstantBufferView(3, dlight.light_info_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         command_list->SetComputeRoot32BitConstants(4, 3, &inv_size_, 0);
+        static float time = 0;
+        time += 0.1f;
+
+        command_list->SetComputeRoot32BitConstants(4, 1, &time, 3);
         command_list->Dispatch(160, 90, 64);
 
         command_list->SetPipelineState(pso_accumulate_.Get());

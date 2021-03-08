@@ -4,11 +4,17 @@
 #include "d3dx12.h"
 #include "scene/scene.hpp"
 #include "ResourceUploadBatch.h"
+
+//#define DEBUGMODE
 namespace feng
 {
     Renderer::Renderer(const Window &window)
     {
-        device_ = std::make_unique<Device>();
+        #ifdef DEBUGMODE
+            device_ = std::make_unique<Device>();
+        #else
+            device_ = std::make_unique<Device>(false);
+        #endif
         render_window_ = std::make_unique<RenderWindow>(*device_, window);
         width_ = window.GetWidth();
         height_ = window.GetHeight();

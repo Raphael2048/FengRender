@@ -18,8 +18,8 @@ float NDCDepthToViewDepth(float z)
 }
 
 static const float GParameter = 0.5f;
-static const float SigmaT = 0.1f;
-static const float SigmaS = 0.08f;
+static const float SigmaT = 0.2f;
+static const float SigmaS = 0.15f;
 #define DEPTH 64
 [numthreads(1, 1, 1)]
 void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)

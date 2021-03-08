@@ -16,6 +16,7 @@ cbuffer ShadowSplits : register(b1)
 cbuffer VolomueParameter : register(b2)
 {
     float3 InvVolumeTextureSize;
+    float Time;
 };
 
 float HGPhase(float CosineTheta, float G)
@@ -83,7 +84,7 @@ void CS(uint3 DispatchThreadId : SV_DISPATCHTHREADID)
     float d = HGPhase(CosineTheta, GParameter) * multiper;
 
     // TODO:: 
-    float v = GradientNoise3D_ALU(WorldSpacePos.xyz * 0.05f, false, 0);
+    float v = GradientNoise3D_ALU((WorldSpacePos.xyz + float3(0, 0, Time))* 0.05f, false, 0);
 
     // Alpha: density of volume. sigma t value.
     t_volume_density[DispatchThreadId] = float4(d * light_color.rgb, clamp(abs(v), 0.1, 1));
