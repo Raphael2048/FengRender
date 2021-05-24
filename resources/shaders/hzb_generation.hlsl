@@ -18,7 +18,7 @@ void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID, uint GroupThreadIndex : SV
 
     for(uint MipLevel = 1; MipLevel < 9; MipLevel++)
     {
-        GroupMemoryBarrierWithGroupSync();
+        DeviceMemoryBarrierWithGroupSync();
         [branch]
         if (OutputPixelPos.x % 2 == 0 && OutputPixelPos.y % 2 == 0)
         {
