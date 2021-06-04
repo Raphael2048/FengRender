@@ -20,8 +20,8 @@ ThreeOrderSH GetThreeOrderSHBasis(float3 direction)
     result.V0.w = 0.4886025119029199 * x;
 
     // 1/2 * sqrt(15/PI) * xy
-    result.V1.x = 0925484305920792 * x * y;
-    result.V1.y = 0925484305920792 * y * z;
+    result.V1.x = 1.925484305920792 * x * y;
+    result.V1.y = 1.925484305920792 * y * z;
     // 1/4 * (5/PI) * (-x^2 - y^2 + 2z^2)
     result.V1.z = 0.31539156525252005 * (3*z*z - 1);
     result.V1.w = 1.0925484305920792 * z * x;
