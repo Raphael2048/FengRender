@@ -47,7 +47,7 @@ float GetAt(float3 ndc, int index)
 // Media Phase Function G Value
 static const float GParameter = 0.9f;
 
-[numthreads(1, 1, 1)]
+[numthreads(8, 8, 1)]
 void CS(uint3 DispatchThreadId : SV_DISPATCHTHREADID)
 {
     float3 uvz = InvVolumeTextureSize * (float3(DispatchThreadId) + 0.5);

@@ -21,7 +21,7 @@ static const float GParameter = 0.5f;
 static const float SigmaT = 0.2f;
 static const float SigmaS = 0.15f;
 #define DEPTH 64
-[numthreads(1, 1, 1)]
+[numthreads(8, 8, 1)]
 void CS(uint2 DispatchThreadId : SV_DISPATCHTHREADID)
 {
     float2 uv = InvVolumeTextureSize.xy * (float2(DispatchThreadId) + 0.5);

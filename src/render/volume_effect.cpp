@@ -6,9 +6,9 @@ namespace feng
 {
     VolumeEffect::VolumeEffect(Renderer& renderer)
     {
-        texture_density_.reset(new DynamicPlain3DTexture(renderer.GetDevice(), 160, 90, 64, DXGI_FORMAT_R16G16B16A16_FLOAT));
-        texture_accumulate_.reset(new DynamicPlain3DTexture(renderer.GetDevice(), 160, 90, 64, DXGI_FORMAT_R16G16B16A16_FLOAT));
-        inv_size_ = Vector3(1.0f / 160, 1.0f / 90, 1.0f / 64);
+        texture_density_.reset(new DynamicPlain3DTexture(renderer.GetDevice(), 160, 96, 64, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        texture_accumulate_.reset(new DynamicPlain3DTexture(renderer.GetDevice(), 160, 96, 64, DXGI_FORMAT_R16G16B16A16_FLOAT));
+        inv_size_ = Vector3(1.0f / 160, 1.0f / 96, 1.0f / 64);
         auto samplers = renderer.GetStaticSamplers();
         {
             auto shader = std::make_unique<ComputeShader>(L"resources\\shaders\\volume_density.hlsl");
@@ -116,7 +116,7 @@ namespace feng
         time += 0.1f;
 
         command_list->SetComputeRoot32BitConstants(4, 1, &time, 3);
-        command_list->Dispatch(160, 90, 64);
+        command_list->Dispatch(160 / 8, 96 / 8, 64);
 
         command_list->SetPipelineState(pso_accumulate_.Get());
         command_list->SetComputeRootSignature(signature_accumulate_.Get());
@@ -126,7 +126,7 @@ namespace feng
         command_list->SetComputeRootDescriptorTable(1, texture_accumulate_->GetGPUUAV());
         command_list->SetComputeRootConstantBufferView(2, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         command_list->SetComputeRoot32BitConstants(3, 3, &inv_size_, 0);
-        command_list->Dispatch(160, 90, 1);
+        command_list->Dispatch(160 / 8, 96 / 8, 1);
 
         command_list->SetPipelineState(pso_integration_.Get());
         command_list->SetGraphicsRootSignature(signature_integration_.Get());

@@ -31,13 +31,13 @@ namespace feng
     class UAVBuffer : public Uncopyable
     {
     public:
-        UAVBuffer(ID3D12Device *device, size_t count, size_t stride)
+        UAVBuffer(ID3D12Device *device, size_t count, size_t stride, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
         {
             size_ = count * stride;
             auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
             auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(
                 count * stride,
-                D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+                flags);
             device->CreateCommittedResource(
                 &heap_properties,
                 D3D12_HEAP_FLAG_NONE,
