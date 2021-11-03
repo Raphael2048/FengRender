@@ -79,38 +79,23 @@ float4 PS(VertexOut pin) : SV_Target
     ndc[1] = mul(WorldSpacePos, shadowmap_splits[1]).xyz;
     ndc[2] = mul(WorldSpacePos, shadowmap_splits[2]).xyz;
 
-    float multiper = 1.0f;
+    int index = 2;
     [branch]
     if (InsideBox(ndc[0]))
     {
-#ifdef DEBUG
-        ndc[1].z = ndc[2].z = 0;
-#else
-        multiper = GetAt(ndc[0], 0);
-#endif
+        index = 0;
     }
     else if (InsideBox(ndc[1]))
     {
-#ifdef DEBUG
-        ndc[0].z = ndc[2].z = 0;
-#else
-        multiper = GetAt(ndc[1], 1);
-#endif
+        index = 1;
     }
     else
     {
-#ifdef DEBUG
-        ndc[0].z = ndc[1].z = 0;
-#else
-        multiper = GetAt(ndc[2], 2);
-#endif
+        index = 2;
     }
+    float multiper = GetAt(ndc[index], index);
 
     float3 output = PBRLight(N, V, L, BaseColor, RoughnessMetallic.x, RoughnessMetallic.y) * light_color.xyz;
 
-#ifdef DEBUG
-    return float4(ndc[0].z, ndc[1].z, ndc[2].z, 0.0f) * multiper ;
-#else
     return float4(output * multiper, 0.0f);
-#endif
 }
