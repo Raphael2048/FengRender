@@ -31,13 +31,13 @@ namespace feng
     class UAVBuffer : public Uncopyable
     {
     public:
-        UAVBuffer(ID3D12Device *device, size_t count, size_t stride, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+        UAVBuffer(ID3D12Device *device, size_t count, size_t stride)
         {
             size_ = count * stride;
             auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
             auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(
                 count * stride,
-                flags);
+                D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
             device->CreateCommittedResource(
                 &heap_properties,
                 D3D12_HEAP_FLAG_NONE,
@@ -73,6 +73,54 @@ namespace feng
     };
 
     template <typename T>
+    class GenericBuffer
+    {
+    public:
+        // GenericBuffer<T>(const GenericBuffer<T>&) = delete;
+        // GenericBuffer<T>& operator=(const GenericBuffer<T>&) = delete;
+        GenericBuffer(ID3D12Device *device, size_t count, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+        {
+            size_ = sizeof(T);
+            auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+            auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(
+                ConstantBufferSize(count * size_),
+                flags);
+            device->CreateCommittedResource(
+                &heap_properties,
+                D3D12_HEAP_FLAG_NONE,
+                &desc_desc,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&resource_));
+            resource_->Map(0, nullptr, reinterpret_cast<void **>(&map_));
+            last_state_ = D3D12_RESOURCE_STATE_GENERIC_READ;
+        }
+        ID3D12Resource *GetResource()
+        {
+            return resource_.Get();
+        }
+        D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress()
+        {
+            return resource_->GetGPUVirtualAddress();
+        }
+        void TransitionToState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
+        {
+            if(state != last_state_)
+            {
+                auto transition = CD3DX12_RESOURCE_BARRIER::Transition(resource_.Get(), last_state_, state);
+                command->ResourceBarrier(1, &transition);
+                last_state_ = state;
+            }
+        }
+
+    private:
+        ComPtr<ID3D12Resource> resource_;
+        UINT size_;
+        D3D12_RESOURCE_STATES last_state_;
+        BYTE *map_ = nullptr;
+    };
+
+    template <typename T>
     class ConstantBuffer
     {
     public:
@@ -84,10 +132,8 @@ namespace feng
         {
             size_ = sizeof(T);
             // constant buffer大小必须是256的倍数
-            size_ = ConstantBufferSize(size_);
-
             auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-            auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(size_ * count);
+            auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(ConstantBufferSize(size_ * count));
             device.GetDevice()->CreateCommittedResource(
                 &heap_properties,
                 D3D12_HEAP_FLAG_NONE,

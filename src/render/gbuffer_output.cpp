@@ -51,6 +51,23 @@ namespace feng
         psoDesc.SampleDesc.Count = 1;
         psoDesc.SampleDesc.Quality = 0;
         renderer.GetDevice().GetDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso_));
+
+#if INDIRECT_DRAW
+        D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[5] = {};
+        argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
+        argumentDescs[0].ConstantBufferView.RootParameterIndex = 0;
+        argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+        argumentDescs[1].ConstantBufferView.RootParameterIndex = 1;
+        argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+        argumentDescs[3].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+        argumentDescs[4].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+        D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+        commandSignatureDesc.pArgumentDescs = argumentDescs;
+        commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+        commandSignatureDesc.ByteStride = sizeof(IndirectCommand);
+        TRY(renderer.GetDevice().GetDevice()->CreateCommandSignature(&commandSignatureDesc, signature_.Get(), IID_PPV_ARGS(&command_signature_)));
+#endif
     }
 
     void GBufferOutput::Draw(Renderer &renderer, const Scene &scene, ID3D12GraphicsCommandList *command_list, uint8_t idx)
