@@ -9,7 +9,7 @@ namespace feng
         CD3DX12_ROOT_PARAMETER slotRootParameter[3];
 
         CD3DX12_DESCRIPTOR_RANGE cbvTable;
-        cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0);
+        cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
         slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
         slotRootParameter[1].InitAsConstantBufferView(0);
@@ -107,7 +107,7 @@ namespace feng
             if (scene.StaticMeshesVisibity[dis])
             {
                 command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
-                command_list->SetGraphicsRootDescriptorTable(0, it->get()->material_->base_color_->GetGPUSRV());
+                command_list->SetGraphicsRootDescriptorTable(0, it->get()->material_->albedo_metallic_->GetGPUSRV());
                 it->get()->DrawWithCommand(command_list);
             }
         }
