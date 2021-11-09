@@ -22,20 +22,28 @@ protected:
         auto sphere = AssimpMeshLoader::LoadModel("resources\\models\\sphere.fbx");
 
         auto material = std::make_shared<StaticMaterial>(
-            L"resources\\textures\\rusted_iron\\albedo_metallic.dds",
-            L"resources\\textures\\rusted_iron\\normal_roughness.dds");
+            L"resources\\textures\\rusted_iron\\albedo.dds",
+            L"resources\\textures\\rusted_iron\\normal.dds",
+            L"resources\\textures\\rusted_iron\\roughness.dds",
+            L"resources\\textures\\rusted_iron\\metallic.dds");
 
         auto material_rock = std::make_shared<StaticMaterial>(
-            L"resources\\textures\\rock\\albedo_metallic.dds",
-            L"resources\\textures\\rock\\normal_roughness.dds");
+            L"resources\\textures\\rock\\albedo.dds",
+            L"resources\\textures\\rock\\normal.dds",
+            L"resources\\textures\\rock\\roughness.dds",
+            L"resources\\textures\\rock\\metallic.dds");
 
         auto material_pica = std::make_shared<StaticMaterial>(
             L"resources\\textures\\pica\\albedo.dds",
-            L"resources\\textures\\pica\\normal.dds");
+            L"resources\\textures\\pica\\normal.dds",
+            L"resources\\textures\\pica\\roughness.dds",
+            L"resources\\textures\\pica\\metallic.dds");
 
         auto material_pure = std::make_shared<StaticMaterial>(
             L"resources\\textures\\pure\\albedo.dds",
-            L"resources\\textures\\pure\\normal.dds");
+            L"resources\\textures\\pure\\normal.dds",
+            L"resources\\textures\\pure\\roughness.dds",
+            L"resources\\textures\\pure\\metallic.dds");
 
         for (auto it = pica.cbegin(); it != pica.cend(); ++it)
         {

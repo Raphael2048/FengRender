@@ -21,12 +21,12 @@ namespace feng
     class StaticMaterial : public Uncopyable
     {
     public:
-        StaticMaterial(const std::wstring &albedo_metallic_path, const std::wstring &normal_roughness_path);
+        StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness, const std::wstring &metallic);
         void Init(Device &device, DirectX::ResourceUploadBatch &uploader);
-        std::shared_ptr<StaticTexture> albedo_metallic_, normal_roughness_;
+        std::shared_ptr<StaticTexture> base_color_, normal_, roughness_, metallic_;
 
     private:
-        std::wstring albedo_metallic_path_, normal_roughness_path_;
+        std::wstring base_color_path_, normal_path_, roughness_path_, metallic_path_;
         // static std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> textures_;
         bool inited_ = false;
     };

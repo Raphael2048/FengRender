@@ -26,8 +26,8 @@ namespace feng
     }
     //std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> StaticMaterial::textures_{};
 
-    StaticMaterial::StaticMaterial(const std::wstring &albedo_metallic_path, const std::wstring &normal_roughness_path)
-        : albedo_metallic_path_(albedo_metallic_path), normal_roughness_path_(normal_roughness_path)
+    StaticMaterial::StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness_, const std::wstring &metallic)
+        : base_color_path_(base_color), normal_path_(normal), roughness_path_(roughness_), metallic_path_(metallic)
     {
     }
 
@@ -37,8 +37,10 @@ namespace feng
             return;
         inited_ = true;
         // Coherent SRVS
-        albedo_metallic_ = std::make_shared<StaticTexture>(device, uploader, albedo_metallic_path_, true);
-        normal_roughness_ = std::make_shared<StaticTexture>(device, uploader, normal_roughness_path_, true);
+        base_color_ = std::make_shared<StaticTexture>(device, uploader, base_color_path_, true);
+        normal_ = std::make_shared<StaticTexture>(device, uploader, normal_path_);
+        roughness_ = std::make_shared<StaticTexture>(device, uploader, roughness_path_);
+        metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);
     }
 
     void DynamicTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)
