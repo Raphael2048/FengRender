@@ -3,7 +3,7 @@
 #include "DirectXHelpers.h"
 #include "dx12/dx12_buffer.hpp"
 
-#define INDIRECT_DRAW 1
+//#define INDIRECT_DRAW 1
 namespace feng
 {
     class Renderer;

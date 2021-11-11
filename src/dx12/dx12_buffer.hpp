@@ -81,9 +81,10 @@ namespace feng
         GenericBuffer(ID3D12Device *device, size_t count, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
         {
             size_ = sizeof(T);
+            size_ = ConstantBufferSize(size_);
             auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
             auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(
-                ConstantBufferSize(count * size_),
+                count * size_,
                 flags);
             device->CreateCommittedResource(
                 &heap_properties,
@@ -132,8 +133,9 @@ namespace feng
         {
             size_ = sizeof(T);
             // constant buffer大小必须是256的倍数
+            size_ = ConstantBufferSize(size_);
             auto heap_properties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-            auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(ConstantBufferSize(size_ * count));
+            auto desc_desc = CD3DX12_RESOURCE_DESC::Buffer(size_ * count);
             device.GetDevice()->CreateCommittedResource(
                 &heap_properties,
                 D3D12_HEAP_FLAG_NONE,

@@ -1,7 +1,4 @@
-Texture2D t_base_color : register(t0);
-Texture2D t_normal : register(t1);
-Texture2D t_roghness : register(t2);
-Texture2D t_metallic : register(t3);
+Texture2D t_bindless_tex[4] : register(t0);
 
 SamplerState linear_sampler : register(s0);
 
@@ -62,10 +59,10 @@ struct PixelOutput
 PixelOutput PS(VertexOut pin) : SV_Target
 {
     PixelOutput pout;
-    pout.base_color.rgb = t_base_color.Sample(linear_sampler, pin.uv).rgb;
+    pout.base_color.rgb = t_bindless_tex[0].Sample(linear_sampler, pin.uv).rgb;
     pout.base_color.a = 0.0f;
 
-    float3 normalT = 2.0f * t_normal.Sample(linear_sampler, pin.uv).rgb - 1.0f;
+    float3 normalT = 2.0f * t_bindless_tex[1].Sample(linear_sampler, pin.uv).rgb - 1.0f;
 
     float3 N = normalize(pin.normal);
     float3 T = normalize(pin.tangent - dot(pin.tangent, N) * N);
@@ -75,7 +72,7 @@ PixelOutput PS(VertexOut pin) : SV_Target
 
     pout.world_normal.rgb = (mul(normalT, TBN) + 1.0) * 0.5;
     pout.world_normal.a = 0.0f;
-    pout.roughness_metallic.x = t_roghness.Sample(linear_sampler, pin.uv).r;
-    pout.roughness_metallic.y = t_metallic.Sample(linear_sampler, pin.uv).r;
+    pout.roughness_metallic.x = t_bindless_tex[2].Sample(linear_sampler, pin.uv).r;
+    pout.roughness_metallic.y = t_bindless_tex[3].Sample(linear_sampler, pin.uv).r;
     return pout;
 }
