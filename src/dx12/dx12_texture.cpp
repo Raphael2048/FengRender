@@ -26,6 +26,8 @@ namespace feng
     }
     //std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> StaticMaterial::textures_{};
 
+    std::vector<std::shared_ptr<StaticMaterial>> StaticMaterial::materials_vector_{};
+
     StaticMaterial::StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness_, const std::wstring &metallic)
         : base_color_path_(base_color), normal_path_(normal), roughness_path_(roughness_), metallic_path_(metallic)
     {
@@ -41,6 +43,13 @@ namespace feng
         normal_ = std::make_shared<StaticTexture>(device, uploader, normal_path_);
         roughness_ = std::make_shared<StaticTexture>(device, uploader, roughness_path_);
         metallic_ = std::make_shared<StaticTexture>(device, uploader, metallic_path_);
+        tex_indices_.base_color_index_ = base_color_->GetIndex();
+        tex_indices_.normal_index_ = normal_->GetIndex();
+        tex_indices_.roughness_index_ = roughness_->GetIndex();
+        tex_indices_.metallic_index_ = metallic_->GetIndex();
+
+        StaticMaterial::materials_vector_.emplace_back(this);
+
     }
 
     void DynamicTexture::TransitionState(ID3D12GraphicsCommandList *command, D3D12_RESOURCE_STATES state)

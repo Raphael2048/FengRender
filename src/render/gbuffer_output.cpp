@@ -6,18 +6,18 @@ namespace feng
     GBufferOutput::GBufferOutput(Renderer &renderer)
     {
         shader = std::make_unique<GraphicsShader>(L"resources\\shaders\\gbuffer_output.hlsl", nullptr);
-        CD3DX12_ROOT_PARAMETER slotRootParameter[3];
+        CD3DX12_ROOT_PARAMETER slotRootParameter[4];
 
         CD3DX12_DESCRIPTOR_RANGE cbvTable;
-        cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0);
+        cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 20, 0);
         slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
-
         slotRootParameter[1].InitAsConstantBufferView(0);
         slotRootParameter[2].InitAsConstantBufferView(1);
+        slotRootParameter[3].InitAsConstantBufferView(2);
 
         auto samplers = renderer.GetStaticSamplers();
 
-        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 1, samplers.data(),
+        CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(_countof(slotRootParameter), slotRootParameter, 1, samplers.data(),
                                                 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
         TRY(DirectX::CreateRootSignature(renderer.GetDevice().GetDevice(), &rootSigDesc, &signature_));
 
@@ -97,17 +97,22 @@ namespace feng
             renderer.t_gbuffer_roughness_metallic_->GetCPURTV(),
             colors, 1, &renderer.scissor_rect_);
 
+        // Use bindless texture
+        command_list->SetGraphicsRootDescriptorTable(0, renderer.GetDevice().GetSRVHeap().GetGpuHandle(0));
+
         command_list->SetGraphicsRootConstantBufferView(2, renderer.pass_constant_buffer_->operator[](idx).GetResource()->GetGPUVirtualAddress());
         ConstantBuffer<ObjectConstantBuffer> &object_buffer = renderer.object_constant_buffer_->operator[](idx);
         D3D12_GPU_VIRTUAL_ADDRESS object_buffer_base_address = object_buffer.GetResource()->GetGPUVirtualAddress();
 
+        ConstantBuffer<MaterialConstantBuffer> &material_buffer = renderer.material_constant_buffer_->operator[](0);
+        D3D12_GPU_VIRTUAL_ADDRESS material_buffer_base_address = material_buffer.GetResource()->GetGPUVirtualAddress();
         for (auto it = scene.StaticMeshes.cbegin(); it != scene.StaticMeshes.cend(); it++)
         {
             auto dis = std::distance(scene.StaticMeshes.cbegin(), it);
             if (scene.StaticMeshesVisibity[dis])
             {
                 command_list->SetGraphicsRootConstantBufferView(1, object_buffer_base_address + dis * object_buffer.GetSize());
-                command_list->SetGraphicsRootDescriptorTable(0, it->get()->material_->base_color_->GetGPUSRV());
+                command_list->SetGraphicsRootConstantBufferView(3, material_buffer_base_address + it->get()->material_->buffer_index_ * material_buffer.GetSize());
                 it->get()->DrawWithCommand(command_list);
             }
         }

@@ -10,6 +10,7 @@ namespace feng
     public:
         StaticTexture(Device &device, DirectX::ResourceUploadBatch &uplaoder, const std::wstring &path, bool srgb = false, bool cubemap = false);
         D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRV();
+        size_t GetIndex() { return srv_heap_index_; }
         ID3D12Resource *GetBuffer() { return buffer_.Get(); }
 
     protected:
@@ -18,13 +19,24 @@ namespace feng
         Device *device_;
     };
 
+    struct MaterialConstantBuffer
+    {
+        int base_color_index_;
+        int normal_index_;
+        int roughness_index_;
+        int metallic_index_;
+    };
+
     class StaticMaterial : public Uncopyable
     {
     public:
         StaticMaterial(const std::wstring &base_color, const std::wstring &normal, const std::wstring &roughness, const std::wstring &metallic);
         void Init(Device &device, DirectX::ResourceUploadBatch &uploader);
         std::shared_ptr<StaticTexture> base_color_, normal_, roughness_, metallic_;
+        MaterialConstantBuffer tex_indices_;
+        size_t buffer_index_;
 
+        static std::vector<std::shared_ptr<StaticMaterial>> materials_vector_;
     private:
         std::wstring base_color_path_, normal_path_, roughness_path_, metallic_path_;
         // static std::unordered_map<std::wstring, std::shared_ptr<StaticTexture>> textures_;

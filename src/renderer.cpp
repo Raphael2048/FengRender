@@ -42,6 +42,14 @@ namespace feng
         }
         pass_constant_buffer_ = std::make_unique<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), 1);
         object_constant_buffer_ = std::make_unique<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>>(GetDevice(), scene.StaticMeshes.size());
+        material_constant_buffer_ = std::make_unique<ConstantBufferGroup<MaterialConstantBuffer, 1>>(GetDevice(), StaticMaterial::materials_vector_.size());
+
+        for(int i = 0; i < StaticMaterial::materials_vector_.size(); ++i)
+        {
+            auto material = StaticMaterial::materials_vector_[i];
+            material->buffer_index_ = i;
+            material_constant_buffer_->operator[](0).Write(i, material->tex_indices_);
+        }
 
         std::vector<D3D12_INPUT_ELEMENT_DESC> layout = {
             {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},

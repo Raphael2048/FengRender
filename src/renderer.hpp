@@ -63,6 +63,7 @@ namespace feng
 
         std::unique_ptr<ConstantBufferGroup<PassConstantBuffer, BACK_BUFFER_SIZE>> pass_constant_buffer_;
         std::unique_ptr<ConstantBufferGroup<ObjectConstantBuffer, BACK_BUFFER_SIZE>> object_constant_buffer_;
+        std::unique_ptr<ConstantBufferGroup<MaterialConstantBuffer, 1>> material_constant_buffer_;
         UINT width_, height_;
         Vector2 screen_buffer_[2];
 
